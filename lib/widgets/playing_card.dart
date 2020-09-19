@@ -1,45 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:solitaire_app/models/card_model.dart';
 import 'card/title_part.dart';
+
+import '../widgets/card_column.dart';
 
 class PlayingCard extends StatelessWidget {
   final double top;
   final double bottom;
-  final bool last;
-  final String rank;
+  final Function handler;
+  final CardModel card;
+  final List<CardModel> cardColumn;
+  final int cardIndex;
+  final int columnIndex;
 
-  PlayingCard({this.top, this.bottom, this.rank, this.last = false});
+  PlayingCard(
+      {this.top,
+      this.bottom,
+      this.card,
+      this.cardColumn,
+      this.cardIndex,
+      this.handler,
+      this.columnIndex});
 
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final width = mediaQuery.size.width;
 
-    print(rank);
-
-    final card = Card2(
+    final cardwiget = CardWidget(
       width: width,
-      rank: rank,
+      card: card,
     );
     return Positioned(
       top: top,
-      child: true
+      child: card.played
           ? Draggable(
-              child: card,
+              child: cardwiget,
+              childWhenDragging: cardwiget,
               feedback: Material(
-                child: card,
                 color: Colors.transparent,
+                child: CardColumn(
+                    cardColumn.sublist(cardIndex), columnIndex, handler),
               ),
-              childWhenDragging: Container(),
+              data: [columnIndex, cardIndex],
             )
-          : card,
+          : cardwiget,
     );
   }
 }
 
-class Card2 extends StatelessWidget {
-  final String rank;
-  const Card2({
-    this.rank,
+class CardWidget extends StatelessWidget {
+  final CardModel card;
+  const CardWidget({
+    this.card,
     @required this.width,
   });
 
@@ -50,19 +63,21 @@ class Card2 extends StatelessWidget {
     return Container(
         width: width / 8,
         height: width / 7 * 1.15,
-        child: Column(children: [
-          TitlePart(rank, 'top'),
-          Image(
-            image: NetworkImage(
-                'https://bfa.github.io/solitaire-js/img/face-jack-spade.png'),
-            width: 50,
-            height: 70,
-          ),
-          TitlePart(rank, 'down'),
-        ]),
+        child: card.played
+            ? Column(children: [
+                if (card.played) TitlePart(card.rank, card.suit, 'top'),
+                Image(
+                  image: NetworkImage(
+                      'https://bfa.github.io/solitaire-js/img/face-jack-spade.png'),
+                  width: 50,
+                  height: 70,
+                ),
+                TitlePart(card.rank, card.suit, 'down'),
+              ])
+            : null,
         decoration: BoxDecoration(
           border: Border.all(),
-          color: Colors.white,
+          color: card.played ? Colors.white : Colors.blue,
           borderRadius: BorderRadius.circular(
             10,
           ),

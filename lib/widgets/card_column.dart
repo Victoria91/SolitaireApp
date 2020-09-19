@@ -5,8 +5,10 @@ import '../widgets/playing_card.dart';
 
 class CardColumn extends StatelessWidget {
   final List<CardModel> cards;
+  final Function handler;
+  final int columnIndex;
 
-  CardColumn(this.cards);
+  CardColumn(this.cards, this.columnIndex, this.handler);
 
   @override
   Widget build(BuildContext context) {
@@ -17,24 +19,28 @@ class CardColumn extends StatelessWidget {
     return Container(
       width: width / 8,
       height: height,
-      child: DragTarget(
+      child: DragTarget<List<int>>(
         onAccept: (data) {
-          print(data);
-
-          print("ACCEPTED");
+          handler(data[0], data[1], columnIndex);
         },
         onWillAccept: (data) {
-          print('data+++$data');
-          return false;
+          if (data[0] == columnIndex) {
+            return false;
+          }
+
+          return true;
         },
-        builder: (ctx, data, rejectedData) => Stack(
+        builder: (ctx, data2, rejectedData) => Stack(
             children: cards
                 .asMap()
                 .entries
                 .map((card) => PlayingCard(
+                    handler: handler,
                     top: (card.key * 30).toDouble(),
-                    rank: card.value.rank,
-                    last: card.key == cards.length - 1))
+                    card: card.value,
+                    cardColumn: cards,
+                    columnIndex: columnIndex,
+                    cardIndex: card.key))
                 .toList()),
       ),
     );

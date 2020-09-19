@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../../models/card_model.dart';
+
 class TitlePart extends StatelessWidget {
   final position;
   final rank;
+  final suit;
 
-  TitlePart(this.rank, this.position);
+  TitlePart(this.rank, this.suit, this.position);
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +21,9 @@ class TitlePart extends StatelessWidget {
           rank,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.red,
+            color: (suit == CardSuit.spade || suit == CardSuit.club)
+                ? Colors.red
+                : Colors.black,
           ),
         ),
       ),

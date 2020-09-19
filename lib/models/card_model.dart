@@ -24,10 +24,15 @@ enum CardRank {
 class CardModel {
   final CardSuit suit;
   final String rank;
+  final bool played;
 
-  CardModel.initFormServer(String suitString, String rankString)
+  CardModel({this.played, this.rank, this.suit});
+
+  CardModel.initFormServer(
+      String suitString, String rankString, int index, int unplayed)
       : rank = rankString,
-        suit = fetchSuit(suitString);
+        suit = fetchSuit(suitString),
+        played = index > unplayed;
 }
 
 CardSuit fetchSuit(String suitString) {
