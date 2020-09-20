@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  final socket = PhoenixSocket("ws://localhost:4000/socket/websocket");
+  final socket = PhoenixSocket("wss://solitaire.dbykov.com/socket/websocket");
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -53,7 +53,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // Make the request to the server to join the channel
     _channel.join().receive("ok", (response) {
       _setCardState(response);
-      // _channel.push(event: "can_move", payload: {'from': 1, 'to': 2});
     });
   }
 
@@ -106,31 +105,36 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       backgroundColor: Colors.green,
-      body: Padding(
-        padding: EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.all(10),
+          child: Container(
+            height: 500,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                CardWidget(
-                  card: CardModel(played: false),
-                  width: mediaQuery.size.width,
-                )
+                Row(
+                  children: [
+                    CardWidget(
+                      card: CardModel(played: false),
+                      width: mediaQuery.size.width,
+                    )
+                  ],
+                ),
+                Padding(padding: EdgeInsets.symmetric(vertical: 5)),
+                Expanded(
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: (cards != null ? cards : [])
+                          .asMap()
+                          .entries
+                          .map((columnCards) => CardColumn(columnCards.value,
+                              columnCards.key, _pushMoveEvent))
+                          .toList()),
+                ),
               ],
             ),
-            Padding(padding: EdgeInsets.symmetric(vertical: 5)),
-            Expanded(
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: (cards != null ? cards : [])
-                      .asMap()
-                      .entries
-                      .map((columnCards) => CardColumn(
-                          columnCards.value, columnCards.key, _pushMoveEvent))
-                      .toList()),
-            ),
-          ],
+          ),
         ),
       ),
     );

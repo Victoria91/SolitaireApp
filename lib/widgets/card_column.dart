@@ -31,17 +31,20 @@ class CardColumn extends StatelessWidget {
           return true;
         },
         builder: (ctx, data2, rejectedData) => Stack(
-            children: cards
-                .asMap()
-                .entries
-                .map((card) => PlayingCard(
+          children: cards
+              .asMap()
+              .entries
+              .map(
+                (card) => PlayingCard(
                     handler: handler,
-                    top: (card.key * 30).toDouble(),
+                    top: (card.key * 20).toDouble(),
                     card: card.value,
                     cardColumn: cards,
                     columnIndex: columnIndex,
-                    cardIndex: card.key))
-                .toList()),
+                    cardIndex: card.key),
+              )
+              .toList(),
+        ),
       ),
     );
   }

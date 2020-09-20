@@ -11,6 +11,9 @@ class TitlePart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Container(
       margin: position == 'top'
           ? EdgeInsets.only(top: 3, left: 3, right: 3)
@@ -20,6 +23,7 @@ class TitlePart extends StatelessWidget {
         child: Text(
           rank,
           style: TextStyle(
+            fontSize: isLandscape ? 14 : 10,
             fontWeight: FontWeight.bold,
             color: (suit == CardSuit.spade || suit == CardSuit.club)
                 ? Colors.red

@@ -60,20 +60,31 @@ class CardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Container(
         width: width / 8,
         height: width / 7 * 1.15,
         child: card.played
-            ? Column(children: [
-                if (card.played) TitlePart(card.rank, card.suit, 'top'),
-                Image(
-                  image: NetworkImage(
-                      'https://bfa.github.io/solitaire-js/img/face-jack-spade.png'),
-                  width: 50,
-                  height: 70,
-                ),
-                TitlePart(card.rank, card.suit, 'down'),
-              ])
+            ? LayoutBuilder(
+                builder: (BuildContext ctx, BoxConstraints constaints) {
+                  return Column(children: [
+                    TitlePart(card.rank, card.suit, 'top'),
+                    Image(
+                      image: NetworkImage(
+                          'https://bfa.github.io/solitaire-js/img/face-jack-spade.png'),
+                      width: isLandscape
+                          ? constaints.maxWidth
+                          : constaints.maxWidth / 1.7,
+                      height: isLandscape
+                          ? constaints.maxHeight / 1.6
+                          : constaints.maxHeight / 1.9,
+                    ),
+                    TitlePart(card.rank, card.suit, 'down'),
+                  ]);
+                },
+              )
             : null,
         decoration: BoxDecoration(
           border: Border.all(),
