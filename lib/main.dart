@@ -27,7 +27,8 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  final socket = PhoenixSocket("wss://solitaire.dbykov.com/socket/websocket");
+  // final socket = PhoenixSocket("wss://solitaire.dbykov.com/socket/websocket");
+  final socket = PhoenixSocket("ws://localhost:4000/socket/websocket");
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -36,6 +37,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   PhoenixChannel _channel;
   List<List<CardModel>> cards;
+  List<CardModel> deck;
+
+  int deckLength;
 
   @override
   void initState() {
@@ -58,24 +62,29 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _setCardState(Map response) {
     setState(() {
-      cards = response['data']
-          .map((res) {
-            return res['cards']
-                .asMap()
-                .entries
-                .toList()
-                .reversed
-                .toList()
-                .map((card) {
-                  return CardModel.initFormServer(
-                      card.value[0],
-                      card.value[1].toString(),
-                      res['cards'].length - card.key,
-                      res['unplayed']);
-                })
-                .toList()
-                .cast<CardModel>();
-          })
+      deck = response['deck']
+          .map((card) => CardModel.initFromDeck(card[0], card[1].toString()))
+          .toList()
+          .reversed
+          .toList()
+          .cast<CardModel>();
+
+      cards = response['columns']
+          .map((res) => res['cards']
+              .asMap()
+              .entries
+              .toList()
+              .reversed
+              .toList()
+              .map((card) {
+                return CardModel.initFormServer(
+                    card.value[0],
+                    card.value[1].toString(),
+                    res['cards'].length - card.key,
+                    res['unplayed']);
+              })
+              .toList()
+              .cast<CardModel>())
           .toList()
           .cast<List<CardModel>>();
     });
@@ -95,6 +104,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _pushChangeEvent() {
+    _channel.push(event: "change").receive("ok", (response) {
+      print('change response Ok');
+
+      _setCardState(response);
+    });
+  }
+
   _updateGameScreen(payload, _ref, _joinRef) {
     _setCardState(payload);
   }
@@ -111,14 +128,42 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Container(
             height: 500,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Row(
                   children: [
-                    CardWidget(
-                      card: CardModel(played: false),
-                      width: mediaQuery.size.width,
-                    )
+                    InkWell(
+                      onTap: () {
+                        print('tapped');
+                        _pushChangeEvent();
+                      },
+                      child: CardWidget(
+                        card: CardModel(played: false),
+                        width: mediaQuery.size.width,
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    if (deck != null && deck.isNotEmpty)
+                      Container(
+                        width: 200,
+                        height: 110,
+                        child: Stack(
+                            overflow: Overflow.visible,
+                            children: deck.asMap().entries.map((card) {
+                              final cardWidget = CardWidget(
+                                width: mediaQuery.size.width,
+                                card: card.value,
+                              );
+                              return Positioned(
+                                  left: (card.key * 20).toDouble(),
+                                  child: (true)
+                                      ? Draggable(
+                                          feedback: cardWidget,
+                                          childWhenDragging: Container(),
+                                          child: cardWidget,
+                                        )
+                                      : cardWidget);
+                            }).toList()),
+                      ),
                   ],
                 ),
                 Padding(padding: EdgeInsets.symmetric(vertical: 5)),

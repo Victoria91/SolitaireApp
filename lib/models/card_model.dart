@@ -33,6 +33,11 @@ class CardModel {
       : rank = rankString,
         suit = fetchSuit(suitString),
         played = index > unplayed;
+
+  CardModel.initFromDeck(String suitString, String rankString)
+      : rank = rankString,
+        suit = fetchSuit(suitString),
+        played = true;
 }
 
 CardSuit fetchSuit(String suitString) {
