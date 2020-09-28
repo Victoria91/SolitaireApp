@@ -90,17 +90,30 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _pushMoveEvent(int fromColumn, int fromCardIndex, int toColumn) {
-    _channel.push(event: "move_to_column", payload: {
+  void _pushMoveFromColumnEvent(
+      int fromColumn, int fromCardIndex, int toColumn) {
+    _channel.push(event: "move_from_column", payload: {
       'from_column': fromColumn,
       'from_card_index': fromCardIndex,
       'to_column': toColumn
     }).receive("ok", (response) {
-      print('move_to_column response Ok');
+      print('move_from_column response Ok');
 
       _setCardState(response);
     }).receive("error", (response) {
       print('Can not move card!');
+    });
+  }
+
+  void _pushMoveFromDeckEvent(int toColumn) {
+    _channel.push(
+        event: "move_from_deck",
+        payload: {'to_column': toColumn}).receive("ok", (response) {
+      print('move_from_deck response Ok');
+
+      _setCardState(response);
+    }).receive("error", (response) {
+      print('Can not move from deck card!');
     });
   }
 
@@ -156,7 +169,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               return Positioned(
                                   left: (card.key * 20).toDouble(),
                                   child: (true)
-                                      ? Draggable(
+                                      ? Draggable<Map>(
+                                          data: {'move_from_deck': true},
                                           feedback: cardWidget,
                                           childWhenDragging: Container(),
                                           child: cardWidget,
@@ -173,8 +187,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       children: (cards != null ? cards : [])
                           .asMap()
                           .entries
-                          .map((columnCards) => CardColumn(columnCards.value,
-                              columnCards.key, _pushMoveEvent))
+                          .map((columnCards) => CardColumn(
+                              cards: columnCards.value,
+                              columnIndex: columnCards.key,
+                              moveFromColumnHandler: _pushMoveFromColumnEvent,
+                              moveFromDeckHandler: _pushMoveFromDeckEvent))
                           .toList()),
                 ),
               ],

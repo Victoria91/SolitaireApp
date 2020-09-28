@@ -34,15 +34,17 @@ class PlayingCard extends StatelessWidget {
     return Positioned(
       top: top,
       child: card.played
-          ? Draggable(
+          ? Draggable<Map>(
               child: cardwiget,
               childWhenDragging: cardwiget,
               feedback: Material(
                 color: Colors.transparent,
                 child: CardColumn(
-                    cardColumn.sublist(cardIndex), columnIndex, handler),
+                    cards: cardColumn.sublist(cardIndex),
+                    columnIndex: columnIndex,
+                    moveFromColumnHandler: handler),
               ),
-              data: [columnIndex, cardIndex],
+              data: {'columnIndex': columnIndex, 'cardIndex': cardIndex},
             )
           : cardwiget,
     );
@@ -88,6 +90,28 @@ class CardWidget extends StatelessWidget {
             : null,
         decoration: BoxDecoration(
           border: Border.all(),
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: Colors.black54,
+              blurRadius: 15.0,
+              offset: Offset(0.0, 8),
+            )
+          ],
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: Colors.grey.withOpacity(0.5),
+          //     spreadRadius: 5,
+          //     blurRadius: 7,
+          //     offset: Offset(0, 3), // changes position of shadow
+          //   ),
+          // ],
+          // border: Border.symmetric(
+          //     horizontal: BorderSide(width: 2.0, color: Colors.black)),
+          // Border(bottom: BorderSide(color: Theme.of(context).dividerColor))
+
+          // border: Border(
+          //   bottom: BorderSide(width: 2.0, color: Colors.black),
+          // ),
           color: card.played ? Colors.white : Colors.blue,
           borderRadius: BorderRadius.circular(
             10,
