@@ -38,6 +38,19 @@ class CardModel {
       : rank = rankString,
         suit = fetchSuit(suitString),
         played = true;
+
+  @override
+  String toString() {
+    return '$rank -- $suit';
+  }
+
+  @override
+  bool operator ==(other) {
+    return this.rank == other.rank && this.suit == other.suit;
+  }
+
+  @override
+  int get hashCode => this.hashCode;
 }
 
 CardSuit fetchSuit(String suitString) {

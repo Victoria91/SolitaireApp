@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:solitaire_app/models/card_model.dart';
-import 'card/title_part.dart';
 
-import '../widgets/card_column.dart';
+import '../models/card_model.dart';
+import 'card_column.dart';
+import 'card/title_part.dart';
 
 class PlayingCard extends StatelessWidget {
   final double top;
   final double bottom;
-  final Function handler;
   final CardModel card;
   final List<CardModel> cardColumn;
   final int cardIndex;
@@ -19,7 +18,6 @@ class PlayingCard extends StatelessWidget {
       this.card,
       this.cardColumn,
       this.cardIndex,
-      this.handler,
       this.columnIndex});
 
   @override
@@ -41,8 +39,7 @@ class PlayingCard extends StatelessWidget {
                 color: Colors.transparent,
                 child: CardColumn(
                     cards: cardColumn.sublist(cardIndex),
-                    columnIndex: columnIndex,
-                    moveFromColumnHandler: handler),
+                    columnIndex: columnIndex),
               ),
               data: {'columnIndex': columnIndex, 'cardIndex': cardIndex},
             )
