@@ -4,9 +4,9 @@ import 'package:phoenix_wings/phoenix_wings.dart';
 import '../models/card_model.dart';
 
 class Game with ChangeNotifier {
-  // final socket = PhoenixSocket("wss://solitaire.dbykov.com/socket/websocket");
+  final socket = PhoenixSocket("wss://solitaire.dbykov.com/socket/websocket");
 
-  final socket = PhoenixSocket("ws://localhost:4000/socket/websocket");
+  // final socket = PhoenixSocket("ws://localhost:4000/socket/websocket");
   PhoenixChannel _channel;
 
   List<List<CardModel>> _columns = [];

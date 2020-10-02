@@ -56,7 +56,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     padding: EdgeInsets.all(10),
                     child: Container(
                       height: 500,
-                      child: Column(
+                      child: Stack(
+                        overflow: Overflow.visible,
                         children: [
                           Row(
                             children: [
@@ -85,25 +86,94 @@ class _MyHomePageState extends State<MyHomePage> {
                             ],
                           ),
                           Padding(padding: EdgeInsets.symmetric(vertical: 5)),
-                          Expanded(
-                            child: Selector<Game, List>(
-                              selector: (ctx, game) => game.columns,
-                              builder: (ctx, columnsData, child) {
-                                print('BUILDING COLUMNS+++');
-                                return Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: columnsData
-                                        .asMap()
-                                        .entries
-                                        .map((columnCards) => CardColumn(
-                                              cards: columnCards.value,
-                                              columnIndex: columnCards.key,
-                                            ))
-                                        .toList());
-                              },
-                            ),
-                          ),
+                          Selector<Game, List>(
+                              selector: (ctx, game) => (game.columns.isNotEmpty)
+                                  ? game.columns[0]
+                                  : null,
+                              builder: (ctx, column, child) => (column != null)
+                                  ? CardColumn(
+                                      cards: column,
+                                      columnIndex: 0,
+                                    )
+                                  : Container()),
+                          Selector<Game, List>(
+                              selector: (ctx, game) => (game.columns.isNotEmpty)
+                                  ? game.columns[1]
+                                  : null,
+                              builder: (ctx, column, child) => (column != null)
+                                  ? CardColumn(
+                                      cards: column,
+                                      columnIndex: 1,
+                                    )
+                                  : Container()),
+                          Selector<Game, List>(
+                              selector: (ctx, game) => (game.columns.isNotEmpty)
+                                  ? game.columns[2]
+                                  : null,
+                              builder: (ctx, column, child) => (column != null)
+                                  ? CardColumn(
+                                      cards: column,
+                                      columnIndex: 2,
+                                    )
+                                  : Container()),
+                          Selector<Game, List>(
+                              selector: (ctx, game) => (game.columns.isNotEmpty)
+                                  ? game.columns[3]
+                                  : null,
+                              builder: (ctx, column, child) => (column != null)
+                                  ? CardColumn(
+                                      cards: column,
+                                      columnIndex: 3,
+                                    )
+                                  : Container()),
+                          Selector<Game, List>(
+                              selector: (ctx, game) => (game.columns.isNotEmpty)
+                                  ? game.columns[4]
+                                  : null,
+                              builder: (ctx, column, child) => (column != null)
+                                  ? CardColumn(
+                                      cards: column,
+                                      columnIndex: 4,
+                                    )
+                                  : Container()),
+                          Selector<Game, List>(
+                              selector: (ctx, game) => (game.columns.isNotEmpty)
+                                  ? game.columns[5]
+                                  : null,
+                              builder: (ctx, column, child) => (column != null)
+                                  ? CardColumn(
+                                      cards: column,
+                                      columnIndex: 5,
+                                    )
+                                  : Container()),
+                          Selector<Game, List>(
+                              selector: (ctx, game) => (game.columns.isNotEmpty)
+                                  ? game.columns[6]
+                                  : null,
+                              builder: (ctx, column, child) => (column != null)
+                                  ? CardColumn(
+                                      cards: column,
+                                      columnIndex: 6,
+                                    )
+                                  : Container()),
+
+                          // Selector<Game, List>(
+                          //   selector: (ctx, game) => game.columns,
+                          //   builder: (ctx, columnsData, child) {
+                          //     print('BUILDING COLUMNS+++');
+                          //     return [
+                          //       ...columnsData
+                          //           .asMap()
+                          //           .entries
+                          //           .map((columnCards) => CardColumn(
+                          //                 cards: columnCards.value,
+                          //                 columnIndex: columnCards.key,
+                          //               ))
+                          //           .toList()
+                          //           .cast<Widget>()
+                          //     ];
+                          //   },
+                          // ),
                         ],
                       ),
                     )),

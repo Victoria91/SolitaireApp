@@ -8,11 +8,12 @@ import '../widgets/playing_card.dart';
 class CardColumn extends StatelessWidget {
   final List<CardModel> cards;
   final int columnIndex;
+  final bool dragging;
 
-  CardColumn({
-    @required this.cards,
-    @required this.columnIndex,
-  });
+  CardColumn(
+      {@required this.cards,
+      @required this.columnIndex,
+      this.dragging = false});
 
   @override
   Widget build(BuildContext context) {
@@ -42,12 +43,15 @@ class CardColumn extends StatelessWidget {
           return true;
         },
         builder: (ctx, data2, rejectedData) => Stack(
+          overflow: Overflow.visible,
           children: cards
               .asMap()
               .entries
               .map(
                 (card) => PlayingCard(
-                    top: (card.key * 20).toDouble(),
+                    top: dragging
+                        ? (card.key * 20).toDouble()
+                        : (120 + card.key * 20).toDouble(),
                     card: card.value,
                     cardColumn: cards,
                     columnIndex: columnIndex,

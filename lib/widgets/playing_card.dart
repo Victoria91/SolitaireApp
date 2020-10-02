@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-
+import 'dart:async';
 import '../models/card_model.dart';
 import 'card_column.dart';
 import 'card/title_part.dart';
 
-class PlayingCard extends StatelessWidget {
+class PlayingCard extends StatefulWidget {
   final double top;
   final double bottom;
   final CardModel card;
@@ -21,27 +21,61 @@ class PlayingCard extends StatelessWidget {
       this.columnIndex});
 
   @override
+  _PlayingCardState createState() => _PlayingCardState();
+}
+
+class _PlayingCardState extends State<PlayingCard> {
+  Timer _timer;
+  var top = 0.0;
+  var left = 0.0;
+
+  _PlayingCardState() {
+    _timer = new Timer(Duration(microseconds: 1000), () {
+      setState(() {
+        top = widget.top;
+        left = widget.columnIndex * 95.0;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _timer.cancel();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final width = mediaQuery.size.width;
 
     final cardwiget = CardWidget(
       width: width,
-      card: card,
+      card: widget.card,
     );
-    return Positioned(
+
+    return AnimatedPositioned(
+      duration: Duration(milliseconds: 1400 - widget.columnIndex * 200),
+      // duration: Duration(milliseconds: 1000),
+      curve: Curves.bounceIn,
       top: top,
-      child: card.played
+      // если раскомментить, не будет возможности с Draggable
+      left: left,
+      child: widget.card.played
           ? Draggable<Map>(
               child: cardwiget,
               childWhenDragging: cardwiget,
               feedback: Material(
                 color: Colors.transparent,
                 child: CardColumn(
-                    cards: cardColumn.sublist(cardIndex),
-                    columnIndex: columnIndex),
+                    // dragging: true,
+                    cards: widget.cardColumn.sublist(widget.cardIndex),
+                    columnIndex: widget.columnIndex),
               ),
-              data: {'columnIndex': columnIndex, 'cardIndex': cardIndex},
+              data: {
+                'columnIndex': widget.columnIndex,
+                'cardIndex': widget.cardIndex
+              },
             )
           : cardwiget,
     );
