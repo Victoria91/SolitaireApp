@@ -49,9 +49,11 @@ class CardColumn extends StatelessWidget {
               .entries
               .map(
                 (card) => PlayingCard(
-                    top: dragging
-                        ? (card.key * 20).toDouble()
-                        : (120 + card.key * 20).toDouble(),
+                    dragging: dragging,
+                    top:
+                        //  dragging
+                        (card.key * 20).toDouble(),
+                    // : (120 + card.key * 20).toDouble(),
                     card: card.value,
                     cardColumn: cards,
                     columnIndex: columnIndex,

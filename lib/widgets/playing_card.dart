@@ -11,6 +11,7 @@ class PlayingCard extends StatefulWidget {
   final List<CardModel> cardColumn;
   final int cardIndex;
   final int columnIndex;
+  final bool dragging;
 
   PlayingCard(
       {this.top,
@@ -18,30 +19,38 @@ class PlayingCard extends StatefulWidget {
       this.card,
       this.cardColumn,
       this.cardIndex,
-      this.columnIndex});
+      this.columnIndex,
+      this.dragging = false});
 
   @override
-  _PlayingCardState createState() => _PlayingCardState();
+  _PlayingCardState createState() => _PlayingCardState(dragging: dragging);
 }
 
 class _PlayingCardState extends State<PlayingCard> {
   Timer _timer;
   var top = 0.0;
   var left = 0.0;
+  final bool dragging;
 
-  _PlayingCardState() {
-    _timer = new Timer(Duration(microseconds: 1000), () {
-      setState(() {
-        top = widget.top;
-        left = widget.columnIndex * 95.0;
+  _PlayingCardState({this.dragging}) {
+    print('dragging $dragging');
+    if (!dragging) {
+      _timer = new Timer(Duration(microseconds: 1000), () {
+        setState(() {
+          top = widget.top;
+          left = widget.columnIndex * 95.0;
+        });
       });
-    });
+    }
   }
 
   @override
   void dispose() {
     super.dispose();
-    _timer.cancel();
+
+    if (!dragging) {
+      _timer.cancel();
+    }
   }
 
   @override
@@ -59,16 +68,21 @@ class _PlayingCardState extends State<PlayingCard> {
       // duration: Duration(milliseconds: 1000),
       curve: Curves.bounceIn,
       top: top,
-      // если раскомментить, не будет возможности с Draggable
-      left: left,
+      // comment this to reproduce
+      // left: left,
       child: widget.card.played
           ? Draggable<Map>(
+              feedbackOffset: Offset.fromDirection(10, 10),
+              // key: UniqueKey(),
               child: cardwiget,
               childWhenDragging: cardwiget,
+              onDragStarted: () {
+                print('started!!!');
+              },
               feedback: Material(
                 color: Colors.transparent,
                 child: CardColumn(
-                    // dragging: true,
+                    dragging: true,
                     cards: widget.cardColumn.sublist(widget.cardIndex),
                     columnIndex: widget.columnIndex),
               ),
