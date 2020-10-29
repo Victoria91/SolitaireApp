@@ -39,6 +39,10 @@ class CardModel {
         suit = fetchSuit(suitString),
         played = true;
 
+  List<String> toServer() {
+    return [fetchString(suit), rank];
+  }
+
   @override
   String toString() {
     return '$rank -- $suit';
@@ -46,7 +50,9 @@ class CardModel {
 
   @override
   bool operator ==(other) {
-    return this.rank == other.rank && this.suit == other.suit;
+    return this.rank == other.rank &&
+        this.suit == other.suit &&
+        this.played == other.played;
   }
 
   @override
@@ -60,6 +66,15 @@ CardSuit fetchSuit(String suitString) {
     'club': CardSuit.club,
     'heart': CardSuit.heart
   }[suitString];
+}
+
+String fetchString(CardSuit suit) {
+  return {
+    CardSuit.spade: 'spade',
+    CardSuit.club: 'club',
+    CardSuit.diamond: 'diamond',
+    CardSuit.heart: 'heart'
+  }[suit];
 }
 
 CardRank fetchRank(String rankString) {

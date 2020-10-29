@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import 'dart:async';
+
 import '../models/card_model.dart';
 import 'card_column.dart';
 import 'card/title_part.dart';
+import '../providers/game.dart';
 
 class PlayingCard extends StatefulWidget {
   final double top;
@@ -12,9 +16,11 @@ class PlayingCard extends StatefulWidget {
   final int cardIndex;
   final int columnIndex;
   final bool dragging;
+  final Game providerData;
 
   PlayingCard(
       {this.top,
+      this.providerData,
       this.bottom,
       this.card,
       this.cardColumn,
@@ -23,24 +29,26 @@ class PlayingCard extends StatefulWidget {
       this.dragging = false});
 
   @override
-  _PlayingCardState createState() => _PlayingCardState(dragging: dragging);
+  _PlayingCardState createState() => _PlayingCardState(
+      dragging: dragging, updatedTop: top, gameInitial: providerData.initial);
 }
 
 class _PlayingCardState extends State<PlayingCard> {
   Timer _timer;
   var top = 0.0;
-  var left = 0.0;
   final bool dragging;
+  final double updatedTop;
+  final bool gameInitial;
 
-  _PlayingCardState({this.dragging}) {
-    print('dragging $dragging');
-    if (!dragging) {
+  _PlayingCardState({this.dragging, this.updatedTop, this.gameInitial}) {
+    if (!dragging && gameInitial) {
       _timer = new Timer(Duration(microseconds: 1000), () {
         setState(() {
           top = widget.top;
-          left = widget.columnIndex * 95.0;
         });
       });
+    } else {
+      top = updatedTop;
     }
   }
 
@@ -48,7 +56,7 @@ class _PlayingCardState extends State<PlayingCard> {
   void dispose() {
     super.dispose();
 
-    if (!dragging) {
+    if (_timer != null) {
       _timer.cancel();
     }
   }
@@ -63,28 +71,34 @@ class _PlayingCardState extends State<PlayingCard> {
       card: widget.card,
     );
 
+    final gameData = Provider.of<Game>(context);
+
     return AnimatedPositioned(
       duration: Duration(milliseconds: 1400 - widget.columnIndex * 200),
-      // duration: Duration(milliseconds: 1000),
       curve: Curves.bounceIn,
       top: top,
-      // comment this to reproduce
-      // left: left,
       child: widget.card.played
           ? Draggable<Map>(
-              feedbackOffset: Offset.fromDirection(10, 10),
-              // key: UniqueKey(),
               child: cardwiget,
               childWhenDragging: cardwiget,
-              onDragStarted: () {
-                print('started!!!');
-              },
+              onDraggableCanceled: (_velocity, _offset) =>
+                  gameData.setColumns(widget.columnIndex, widget.cardColumn),
+              onDragStarted: () => gameData.setColumns(widget.columnIndex,
+                  widget.cardColumn.sublist(0, widget.cardIndex)),
               feedback: Material(
                 color: Colors.transparent,
-                child: CardColumn(
-                    dragging: true,
-                    cards: widget.cardColumn.sublist(widget.cardIndex),
-                    columnIndex: widget.columnIndex),
+                child: Container(
+                  width: width,
+                  height: width / 7 * 1.15 +
+                      widget.cardColumn.sublist(widget.cardIndex).length * 20 -
+                      1,
+                  child: Stack(children: [
+                    CardColumn(
+                        dragging: true,
+                        cards: widget.cardColumn.sublist(widget.cardIndex),
+                        columnIndex: widget.columnIndex),
+                  ]),
+                ),
               ),
               data: {
                 'columnIndex': widget.columnIndex,

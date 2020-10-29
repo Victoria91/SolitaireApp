@@ -46,69 +46,75 @@ class _MyHomePageState extends State<MyHomePage> {
       backgroundColor: Colors.green,
       body: FutureBuilder(
         future: gameProvider.fetchAndLoadGame(),
-        builder: (ctx, gameSnapshot) => gameSnapshot.connectionState ==
-                ConnectionState.waiting
-            ? Center(
-                child: CircularProgressIndicator(),
-              )
-            : SingleChildScrollView(
-                child: Padding(
-                    padding: EdgeInsets.all(10),
-                    child: Container(
-                      height: 500,
-                      child: Column(
-                        children: [
-                          Row(
+        builder: (ctx, gameSnapshot) =>
+            gameSnapshot.connectionState == ConnectionState.waiting
+                ? Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : SingleChildScrollView(
+                    child: Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Container(
+                          height: 500,
+                          child: Stack(
+                            overflow: Overflow.visible,
                             children: [
-                              InkWell(
-                                onTap: gameProvider.pushChangeEvent,
-                                child: CardWidget(
-                                  card: CardModel(played: false),
-                                  width: mediaQuery.size.width,
-                                ),
+                              Row(
+                                children: [
+                                  InkWell(
+                                    onTap: gameProvider.pushChangeEvent,
+                                    child: CardWidget(
+                                      card: CardModel(played: false),
+                                      width: mediaQuery.size.width,
+                                    ),
+                                  ),
+                                  SizedBox(width: 10),
+                                  Container(
+                                    width: 200,
+                                    height: 110,
+                                    child: Selector<Game, List>(
+                                      selector: (ctx, game) => game.deck,
+                                      builder: (ctx, game, child) {
+                                        print("BUILD DECK");
+                                        return game.isEmpty
+                                            ? Container()
+                                            : DeckWidget(
+                                                deck: game,
+                                                mediaQuery: mediaQuery);
+                                      },
+                                    ),
+                                  ),
+                                ],
                               ),
-                              SizedBox(width: 10),
-                              Container(
-                                width: 200,
-                                height: 110,
-                                child: Selector<Game, List>(
-                                  selector: (ctx, game) => game.deck,
-                                  builder: (ctx, game, child) {
-                                    print("BUILD DECK");
-                                    return game.isEmpty
-                                        ? Container()
-                                        : DeckWidget(
-                                            deck: game, mediaQuery: mediaQuery);
-                                  },
-                                ),
-                              ),
+                              buildCardColumn(0, context),
+                              buildCardColumn(1, context),
+                              buildCardColumn(2, context),
+                              buildCardColumn(3, context),
+                              buildCardColumn(4, context),
+                              buildCardColumn(5, context),
+                              buildCardColumn(6, context),
                             ],
                           ),
-                          Padding(padding: EdgeInsets.symmetric(vertical: 5)),
-                          Expanded(
-                            child: Selector<Game, List>(
-                              selector: (ctx, game) => game.columns,
-                              builder: (ctx, columnsData, child) {
-                                print('BUILDING COLUMNS+++');
-                                return Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: columnsData
-                                        .asMap()
-                                        .entries
-                                        .map((columnCards) => CardColumn(
-                                              cards: columnCards.value,
-                                              columnIndex: columnCards.key,
-                                            ))
-                                        .toList());
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    )),
-              ),
+                        )),
+                  ),
       ),
+    );
+  }
+
+  Selector<Game, List> buildCardColumn(int index, BuildContext context) {
+    return Selector<Game, List>(
+      selector: (ctx, game) =>
+          game.columns.isNotEmpty ? game.columns[index] : null,
+      builder: (ctx, columnsData, child) {
+        print('BUILDING COLUMNS+++$index');
+
+        return columnsData == null
+            ? Container()
+            : CardColumn(
+                cards: columnsData,
+                columnIndex: index,
+                width: MediaQuery.of(context).size.width);
+      },
     );
   }
 }
