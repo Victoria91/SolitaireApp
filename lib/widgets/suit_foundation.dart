@@ -11,17 +11,20 @@ class SuitFoundation extends StatefulWidget {
   final CardSuit suit;
   final int position;
   final Map foundation;
+  final bool isLandscape;
 
-  SuitFoundation({
-    Key key,
-    @required this.width,
-    @required this.foundation,
-    @required this.suit,
-    @required this.position,
-  }) : super(key: key ?? ValueKey([foundation]));
+  SuitFoundation(
+      {Key key,
+      @required this.width,
+      @required this.foundation,
+      @required this.suit,
+      @required this.position,
+      @required this.isLandscape})
+      : super(key: key ?? ValueKey([foundation]));
 
   @override
   _SuitFoundationState createState() => _SuitFoundationState(
+      isLandscape: isLandscape,
       currentCard: foundation['rank'],
       width: width,
       position: position,
@@ -41,8 +44,10 @@ class _SuitFoundationState extends State<SuitFoundation> {
   final int position;
   final List from;
   final int deckLength;
-  double newLeftValue;
   final int cardIndex;
+  final bool isLandscape;
+
+  double newLeftValue;
 
   _SuitFoundationState(
       {@required this.currentCard,
@@ -51,15 +56,22 @@ class _SuitFoundationState extends State<SuitFoundation> {
       @required this.from,
       @required this.deckLength,
       @required this.prevCard,
+      @required this.isLandscape,
       @required this.cardIndex}) {
-    newLeftValue = width / 8 * 3.4 + width / 8 * position + 10 * position;
-
+    final cardFraction = isLandscape ? 8 : 9;
+    final ratio = isLandscape ? 3.35 : 3.7;
+    newLeftValue = width / cardFraction * ratio +
+        width / cardFraction * position +
+        10 * position;
+    // newLeftValue = width / 8 * 3.35 + width / 8 * position + 10 * position;
     if (currentCard == null) {
       left = newLeftValue;
     } else {
       if (from[0] == "deck") {
         // card was moved from deck, animate only left property
-        left = (width / 8 + deckLength * 20).toDouble();
+
+        final cardOffset = isLandscape ? 20 : 15;
+        left = (width / cardFraction + deckLength * cardOffset).toDouble();
       } else {
         // card was moved from column, animate both left and top
         left = from[1] * width / 7;
@@ -93,8 +105,15 @@ class _SuitFoundationState extends State<SuitFoundation> {
         Positioned(
           left: newLeftValue,
           child: prevCard != null
-              ? CardWidget(width: width, card: prevCard)
-              : EmptyFoundation(width: widget.width),
+              ? CardWidget(
+                  width: width,
+                  card: prevCard,
+                  isLandscape: isLandscape,
+                )
+              : EmptyFoundation(
+                  width: widget.width,
+                  cardFraction: isLandscape ? 8 : 9,
+                ),
         ),
         AnimatedPositioned(
           curve: Curves.fastOutSlowIn,
@@ -102,8 +121,14 @@ class _SuitFoundationState extends State<SuitFoundation> {
           left: left,
           duration: Duration(milliseconds: 500),
           child: (currentCard == null)
-              ? EmptyFoundation(width: widget.width)
-              : CardWidget(width: widget.width, card: currentCard),
+              ? EmptyFoundation(
+                  width: widget.width,
+                  cardFraction: isLandscape ? 8 : 9,
+                )
+              : CardWidget(
+                  width: widget.width,
+                  isLandscape: isLandscape,
+                  card: currentCard),
         ),
       ],
     );
@@ -111,17 +136,17 @@ class _SuitFoundationState extends State<SuitFoundation> {
 }
 
 class EmptyFoundation extends StatelessWidget {
-  const EmptyFoundation({
-    Key key,
-    @required this.width,
-  }) : super(key: key);
+  const EmptyFoundation(
+      {Key key, @required this.width, @required this.cardFraction})
+      : super(key: key);
 
   final double width;
+  final double cardFraction;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        width: width / 8,
+        width: width / cardFraction,
         height: width / 7 * 1.15,
         child: DottedBorder(
           child: Container(),

@@ -10,22 +10,22 @@ import '../providers/game.dart';
 
 class PlayingCard extends StatefulWidget {
   final double top;
-  final double bottom;
   final CardModel card;
   final List<CardModel> cardColumn;
   final int cardIndex;
   final int columnIndex;
   final bool dragging;
   final Game providerData;
+  final bool isLandscape;
 
   PlayingCard(
-      {this.top,
-      this.providerData,
-      this.bottom,
-      this.card,
-      this.cardColumn,
-      this.cardIndex,
-      this.columnIndex,
+      {@required this.top,
+      @required this.providerData,
+      @required this.card,
+      @required this.cardColumn,
+      @required this.cardIndex,
+      @required this.columnIndex,
+      @required this.isLandscape,
       this.dragging = false});
 
   @override
@@ -67,6 +67,7 @@ class _PlayingCardState extends State<PlayingCard> {
     final width = mediaQuery.size.width;
 
     final cardwiget = CardWidget(
+      isLandscape: widget.isLandscape,
       width: width,
       card: widget.card,
     );
@@ -94,6 +95,7 @@ class _PlayingCardState extends State<PlayingCard> {
                       1,
                   child: Stack(children: [
                     CardColumn(
+                        isLandscape: widget.isLandscape,
                         dragging: true,
                         cards: widget.cardColumn.sublist(widget.cardIndex),
                         columnIndex: widget.columnIndex),
@@ -111,13 +113,15 @@ class _PlayingCardState extends State<PlayingCard> {
 }
 
 class CardWidget extends StatelessWidget {
-  final CardModel card;
   const CardWidget({
     @required this.card,
     @required this.width,
+    @required this.isLandscape,
   });
 
+  final CardModel card;
   final double width;
+  final bool isLandscape;
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +129,7 @@ class CardWidget extends StatelessWidget {
         MediaQuery.of(context).orientation == Orientation.landscape;
 
     return Container(
-        width: width / 8,
+        width: width / (isLandscape ? 8 : 9),
         height: width / 7 * 1.15,
         child: card.played
             ? LayoutBuilder(
@@ -179,7 +183,7 @@ class CardWidget extends StatelessWidget {
           // ),
           color: card.played ? Colors.white : Colors.blue,
           borderRadius: BorderRadius.circular(
-            10,
+            isLandscape ? 10 : 8,
           ),
         ));
   }

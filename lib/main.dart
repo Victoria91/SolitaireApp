@@ -47,79 +47,85 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final mediaQuery = MediaQuery.of(context);
     final gameProvider = Provider.of<Game>(context, listen: false);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+
     return Scaffold(
       backgroundColor: Colors.purple,
       body: FutureBuilder(
         future: gameProvider.fetchAndLoadGame(),
-        builder: (ctx, gameSnapshot) =>
-            gameSnapshot.connectionState == ConnectionState.waiting
-                ? Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : SingleChildScrollView(
-                    child: Container(
-                      decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                              colors: [gradientStart, gradientEnd],
-                              begin: const FractionalOffset(0.5, 0.0),
-                              end: const FractionalOffset(0.0, 0.5),
-                              stops: [0.0, 1.0],
-                              tileMode: TileMode.clamp)),
-                      child: Padding(
-                          padding: EdgeInsets.all(10),
-                          child: Container(
-                            height: 500,
-                            child: Stack(
-                              overflow: Overflow.visible,
-                              children: [
-                                InkWell(
-                                  onTap: gameProvider.pushChangeEvent,
-                                  child: CardWidget(
-                                    card: CardModel(played: false),
-                                    width: mediaQuery.size.width,
-                                  ),
-                                ),
-                                Container(
-                                  width: 180,
-                                  height: 110,
-                                  child: Selector<Game, List>(
-                                    selector: (ctx, game) => game.deck,
-                                    builder: (ctx, game, child) {
-                                      print("BUILD DECK");
-                                      return game.isEmpty
-                                          ? Container()
-                                          : DeckWidget(
-                                              deck: game,
-                                              mediaQuery: mediaQuery);
-                                    },
-                                  ),
-                                ),
-                                buildCardColumn(0, context),
-                                buildCardColumn(1, context),
-                                buildCardColumn(2, context),
-                                buildCardColumn(3, context),
-                                buildCardColumn(4, context),
-                                buildCardColumn(5, context),
-                                buildCardColumn(6, context),
-                                buildFoundation(mediaQuery, 'spade', 0,
-                                    gameProvider.deck.length),
-                                buildFoundation(mediaQuery, 'club', 1,
-                                    gameProvider.deck.length),
-                                buildFoundation(mediaQuery, 'diamond', 2,
-                                    gameProvider.deck.length),
-                                buildFoundation(mediaQuery, 'heart', 3,
-                                    gameProvider.deck.length),
-                              ],
+        builder: (ctx, gameSnapshot) => gameSnapshot.connectionState ==
+                ConnectionState.waiting
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : SingleChildScrollView(
+                child: Container(
+                  decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                          colors: [gradientStart, gradientEnd],
+                          begin: const FractionalOffset(0.5, 0.0),
+                          end: const FractionalOffset(0.0, 0.5),
+                          stops: [0.0, 1.0],
+                          tileMode: TileMode.clamp)),
+                  child: Padding(
+                      padding: isLandscape
+                          ? EdgeInsets.symmetric(vertical: 28, horizontal: 10)
+                          : EdgeInsets.symmetric(vertical: 40, horizontal: 10),
+                      child: Container(
+                        height: 500,
+                        child: Stack(
+                          overflow: Overflow.visible,
+                          children: [
+                            InkWell(
+                              onTap: gameProvider.pushChangeEvent,
+                              child: CardWidget(
+                                isLandscape: isLandscape,
+                                card: CardModel(played: false),
+                                width: mediaQuery.size.width,
+                              ),
                             ),
-                          )),
-                    ),
-                  ),
+                            Container(
+                              width: 180,
+                              height: 110,
+                              child: Selector<Game, List>(
+                                selector: (ctx, game) => game.deck,
+                                builder: (ctx, game, child) {
+                                  print("BUILD DECK");
+                                  return game.isEmpty
+                                      ? Container()
+                                      : DeckWidget(
+                                          isLandscape: isLandscape,
+                                          deck: game,
+                                          mediaQuery: mediaQuery);
+                                },
+                              ),
+                            ),
+                            buildCardColumn(0, isLandscape, context),
+                            buildCardColumn(1, isLandscape, context),
+                            buildCardColumn(2, isLandscape, context),
+                            buildCardColumn(3, isLandscape, context),
+                            buildCardColumn(4, isLandscape, context),
+                            buildCardColumn(5, isLandscape, context),
+                            buildCardColumn(6, isLandscape, context),
+                            buildFoundation(mediaQuery, 'spade', 0,
+                                gameProvider.deck.length, isLandscape),
+                            buildFoundation(mediaQuery, 'club', 1,
+                                gameProvider.deck.length, isLandscape),
+                            buildFoundation(mediaQuery, 'diamond', 2,
+                                gameProvider.deck.length, isLandscape),
+                            buildFoundation(mediaQuery, 'heart', 3,
+                                gameProvider.deck.length, isLandscape),
+                          ],
+                        ),
+                      )),
+                ),
+              ),
       ),
     );
   }
 
   Selector<Game, Map> buildFoundation(MediaQueryData mediaQuery, String suit,
-          int position, int deckLength) =>
+          int position, int deckLength, bool isLandscape) =>
       Selector<Game, Map>(selector: (ctx, game) {
         return (game.foundation[suit] != null) ? game.foundation[suit] : null;
       }, builder: (ctx, foundation, child) {
@@ -128,6 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
         return foundation == null
             ? Container()
             : SuitFoundation(
+                isLandscape: isLandscape,
                 foundation: foundation,
                 width: mediaQuery.size.width,
                 suit: CardModel.fetchSuit(suit),
@@ -140,7 +147,8 @@ class _MyHomePageState extends State<MyHomePage> {
         return previous['rank'] != next['rank'];
       });
 
-  Selector<Game, List> buildCardColumn(int index, BuildContext context) {
+  Selector<Game, List> buildCardColumn(
+      int index, bool isLandscape, BuildContext context) {
     return Selector<Game, List>(
       selector: (ctx, game) =>
           game.columns.isNotEmpty ? game.columns[index] : null,
@@ -150,6 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
         return columnsData == null
             ? Container()
             : CardColumn(
+                isLandscape: isLandscape,
                 cards: columnsData,
                 columnIndex: index,
                 width: MediaQuery.of(context).size.width);

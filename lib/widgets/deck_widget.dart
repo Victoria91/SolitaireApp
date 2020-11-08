@@ -6,29 +6,36 @@ import 'playing_card.dart';
 import '../providers/game.dart';
 
 class DeckWidget extends StatelessWidget {
-  const DeckWidget({
-    Key key,
-    @required this.deck,
-    @required this.mediaQuery,
-  }) : super(key: key);
+  const DeckWidget(
+      {Key key,
+      @required this.deck,
+      @required this.mediaQuery,
+      @required this.isLandscape})
+      : super(key: key);
 
   final List<CardModel> deck;
   final MediaQueryData mediaQuery;
+  final bool isLandscape;
 
   @override
   Widget build(BuildContext context) {
     final gameData = Provider.of<Game>(context);
+    final offsetBetweenCards = isLandscape ? 20 : 15;
 
     return Stack(
         overflow: Overflow.visible,
         children: deck.asMap().entries.map((card) {
           final cardWidget = CardWidget(
+            isLandscape: isLandscape,
             width: mediaQuery.size.width,
             card: card.value,
           );
 
           return Positioned(
-              left: (mediaQuery.size.width / 8 + 10 + card.key * 20).toDouble(),
+              left: (mediaQuery.size.width / 8 +
+                      10 +
+                      card.key * offsetBetweenCards)
+                  .toDouble(),
               child: (card.key == deck.length - 1)
                   ? Draggable<Map>(
                       data: {'move_from_deck': true, 'card': deck.last},

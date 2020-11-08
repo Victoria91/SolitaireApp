@@ -12,10 +12,12 @@ class CardColumn extends StatefulWidget {
   final int columnIndex;
   final bool dragging;
   final double width;
+  final bool isLandscape;
 
   CardColumn(
       {@required this.cards,
       @required this.columnIndex,
+      @required this.isLandscape,
       this.width,
       this.dragging = false});
 
@@ -57,6 +59,7 @@ class _CardColumnState extends State<CardColumn> {
     final width = mediaQuery.size.width;
 
     final providerData = Provider.of<Game>(context);
+    final verticalOffset = widget.isLandscape ? 120 : 90;
 
     return AnimatedPositioned(
       duration: Duration(milliseconds: 1400 - widget.columnIndex * 200),
@@ -89,11 +92,12 @@ class _CardColumnState extends State<CardColumn> {
                 .entries
                 .map(
                   (card) => PlayingCard(
+                      isLandscape: widget.isLandscape,
                       providerData: providerData,
                       dragging: widget.dragging,
                       top: widget.dragging
                           ? (card.key * 20).toDouble()
-                          : (120 + card.key * 20).toDouble(),
+                          : (verticalOffset + card.key * 20).toDouble(),
                       card: card.value,
                       cardColumn: widget.cards,
                       columnIndex: widget.columnIndex,
