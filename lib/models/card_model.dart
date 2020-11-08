@@ -57,15 +57,15 @@ class CardModel {
 
   @override
   int get hashCode => this.hashCode;
-}
 
-CardSuit fetchSuit(String suitString) {
-  return {
-    'spade': CardSuit.spade,
-    'diamond': CardSuit.diamond,
-    'club': CardSuit.club,
-    'heart': CardSuit.heart
-  }[suitString];
+  static CardSuit fetchSuit(String suitString) {
+    return {
+      'spade': CardSuit.spade,
+      'diamond': CardSuit.diamond,
+      'club': CardSuit.club,
+      'heart': CardSuit.heart
+    }[suitString];
+  }
 }
 
 String fetchString(CardSuit suit) {

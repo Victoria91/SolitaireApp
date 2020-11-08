@@ -42,7 +42,7 @@ class _PlayingCardState extends State<PlayingCard> {
 
   _PlayingCardState({this.dragging, this.updatedTop, this.gameInitial}) {
     if (!dragging && gameInitial) {
-      _timer = new Timer(Duration(microseconds: 1000), () {
+      _timer = Timer(Duration(microseconds: 1000), () {
         setState(() {
           top = widget.top;
         });
@@ -113,7 +113,7 @@ class _PlayingCardState extends State<PlayingCard> {
 class CardWidget extends StatelessWidget {
   final CardModel card;
   const CardWidget({
-    this.card,
+    @required this.card,
     @required this.width,
   });
 
@@ -132,6 +132,12 @@ class CardWidget extends StatelessWidget {
                 builder: (BuildContext ctx, BoxConstraints constaints) {
                   return Column(children: [
                     TitlePart(card.rank, card.suit, 'top'),
+                    // Icon(
+                    //   Icons.hail,
+                    //   size: 15,
+                    // ),
+                    // Icon(Icons.hail),
+                    // Icon(Icons.hail),
                     Image(
                       image: NetworkImage(
                           'https://bfa.github.io/solitaire-js/img/face-jack-spade.png'),

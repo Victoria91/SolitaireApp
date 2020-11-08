@@ -28,7 +28,7 @@ class DeckWidget extends StatelessWidget {
           );
 
           return Positioned(
-              left: (card.key * 20).toDouble(),
+              left: (mediaQuery.size.width / 8 + 10 + card.key * 20).toDouble(),
               child: (card.key == deck.length - 1)
                   ? Draggable<Map>(
                       data: {'move_from_deck': true, 'card': deck.last},

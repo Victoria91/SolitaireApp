@@ -6,8 +6,10 @@ import '../models/card_model.dart';
 import 'package:http/http.dart' as http;
 
 class Game with ChangeNotifier {
-  static const host_path = 'solitaire.dbykov.com';
-  final socket = PhoenixSocket("wss://$host_path/socket/websocket");
+  // static const host_path = '://192.168.0.13:4000';
+  // static const host_path = '://localhost:4000';
+  static const host_path = 's://solitaire.dbykov.com';
+  final socket = PhoenixSocket("ws$host_path/socket/websocket");
 
   // final socket = PhoenixSocket("ws://localhost:4000/socket/websocket");
   PhoenixChannel _channel;
@@ -16,15 +18,21 @@ class Game with ChangeNotifier {
   List<CardModel> _deck = [];
   // if game has just started (needed for animation condition)
   bool initial = true;
-  List<List<CardModel>> get columns {
-    return _columns;
-  }
 
   int activeColumnIndex;
 
-  List<CardModel> get deck {
-    return _deck;
-  }
+  Map<String, Map> _foundation = {
+    'club': null,
+    'diamond': null,
+    'spade': null,
+    'heart': null
+  };
+
+  List<List<CardModel>> get columns => _columns;
+
+  Map<String, Map> get foundation => _foundation;
+
+  List<CardModel> get deck => _deck;
 
   void setActiveColumnIndex(int index) {
     activeColumnIndex = index;
@@ -33,6 +41,7 @@ class Game with ChangeNotifier {
 
   Future<void> fetchAndLoadGame() async {
     await socket.connect();
+
     // Create a new PhoenixChannel
     _channel = socket.channel("game");
     // Setup listeners for channel events
@@ -43,6 +52,7 @@ class Game with ChangeNotifier {
       print("RECEIVED OK ON JOIN");
       _setCardStateColumns(responseFromServer, false);
       _setCardStateDeck(responseFromServer);
+      _setCardStateFoundation(responseFromServer);
     });
   }
 
@@ -71,7 +81,6 @@ class Game with ChangeNotifier {
   }
 
   void pushMoveFromDeckEvent(int toColumn) {
-    notifyListeners();
     _channel.push(
         event: "move_from_deck",
         payload: {'to_column': toColumn}).receive("ok", (response) {
@@ -93,11 +102,6 @@ class Game with ChangeNotifier {
 
       print(DateTime.now().millisecondsSinceEpoch);
     });
-  }
-
-  void emptyColumn(int index) {
-    _columns[index] = [];
-    notifyListeners();
   }
 
   void setColumns(int index, List<CardModel> cards) {
@@ -155,17 +159,46 @@ class Game with ChangeNotifier {
     notifyListeners();
   }
 
+  void _setCardStateFoundation(Map response) {
+    ['club', 'diamond', 'heart', 'spade'].forEach((element) {
+      final responseBySuit = response['foundation'][element];
+      int fromCardIndex;
+      print(responseBySuit['from']);
+      final fromResponseBySuit = responseBySuit['from'];
+      if (fromResponseBySuit != null && fromResponseBySuit[0] == "column") {
+        fromCardIndex =
+            response['columns'][fromResponseBySuit[1]]['cards'].length + 1;
+        print('fromCardIndex$fromCardIndex');
+      }
+      foundation[element] = (responseBySuit['rank'] == null)
+          ? {}
+          : {
+              'prev': responseBySuit['prev'] == null
+                  ? null
+                  : CardModel.initFromDeck(element, responseBySuit['prev']),
+              'from': fromResponseBySuit,
+              'cardIndex': fromCardIndex,
+              'deckLength': response['deck'].length,
+              'rank': CardModel.initFromDeck(element, responseBySuit['rank'])
+            };
+    });
+
+    notifyListeners();
+  }
+
   _updateGameScreen(payload, _ref, _joinRef) {
     print('received _updateGameScreen+++');
+
     _setCardStateDeck(payload);
     _setCardStateColumns(payload);
+    _setCardStateFoundation(payload);
   }
 
   Future<bool> canMove(List<String> to, List<String> from) async {
     var client = http.Client();
     try {
       final response = await client.get(
-          'https://$host_path/can_move?to_suit=${to[0]}&to_rank=${to[1]}&from_suit=${from[0]}&from_rank=${from[1]}');
+          'http$host_path/can_move?to_suit=${to[0]}&to_rank=${to[1]}&from_suit=${from[0]}&from_rank=${from[1]}');
 
       return response.body == 'true';
     } finally {
