@@ -1,3 +1,9 @@
+import 'package:solitaire_app/custom_icons/club_icons.dart';
+import 'package:solitaire_app/custom_icons/diamond_icons.dart';
+import 'package:solitaire_app/custom_icons/heart_icons.dart';
+import 'package:flutter/widgets.dart';
+import 'package:solitaire_app/custom_icons/spade_icons.dart';
+
 enum CardSuit {
   spade,
   heart,
@@ -65,6 +71,19 @@ class CardModel {
       'club': CardSuit.club,
       'heart': CardSuit.heart
     }[suitString];
+  }
+
+  bool isRed() {
+    return (suit == CardSuit.heart || suit == CardSuit.diamond);
+  }
+
+  IconData icon() {
+    return {
+      CardSuit.heart: Heart.heart,
+      CardSuit.diamond: Diamond.diamonds,
+      CardSuit.club: Club.clubs,
+      CardSuit.spade: Spade.spades
+    }[suit];
   }
 }
 

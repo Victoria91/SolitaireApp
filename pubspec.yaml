@@ -76,5 +76,20 @@ flutter:
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
   #
+
+  fonts:
+    - family:  Heart
+      fonts:
+       - asset: assets/fonts/Heart.ttf
+    - family:  Diamond
+      fonts:
+       - asset: assets/fonts/Diamond.ttf
+    - family:  Spade
+      fonts:
+       - asset: assets/fonts/Spade.ttf
+    - family:  Club
+      fonts:
+      - asset: assets/fonts/Club.ttf
+
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

@@ -96,8 +96,8 @@ class _CardColumnState extends State<CardColumn> {
                       providerData: providerData,
                       dragging: widget.dragging,
                       top: widget.dragging
-                          ? (card.key * 20).toDouble()
-                          : (verticalOffset + card.key * 20).toDouble(),
+                          ? (card.key * 18).toDouble()
+                          : (verticalOffset + card.key * 18).toDouble(),
                       card: card.value,
                       cardColumn: widget.cards,
                       columnIndex: widget.columnIndex,

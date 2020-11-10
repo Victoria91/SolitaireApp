@@ -59,7 +59,7 @@ class _SuitFoundationState extends State<SuitFoundation> {
       @required this.isLandscape,
       @required this.cardIndex}) {
     final cardFraction = isLandscape ? 8 : 9;
-    final ratio = isLandscape ? 3.35 : 3.7;
+    final ratio = isLandscape ? 3.40 : 3.7;
     newLeftValue = width / cardFraction * ratio +
         width / cardFraction * position +
         10 * position;
@@ -111,6 +111,7 @@ class _SuitFoundationState extends State<SuitFoundation> {
                   isLandscape: isLandscape,
                 )
               : EmptyFoundation(
+                  isLandscape: isLandscape,
                   width: widget.width,
                   cardFraction: isLandscape ? 8 : 9,
                 ),
@@ -123,6 +124,7 @@ class _SuitFoundationState extends State<SuitFoundation> {
           child: (currentCard == null)
               ? EmptyFoundation(
                   width: widget.width,
+                  isLandscape: isLandscape,
                   cardFraction: isLandscape ? 8 : 9,
                 )
               : CardWidget(
@@ -137,11 +139,15 @@ class _SuitFoundationState extends State<SuitFoundation> {
 
 class EmptyFoundation extends StatelessWidget {
   const EmptyFoundation(
-      {Key key, @required this.width, @required this.cardFraction})
+      {Key key,
+      @required this.width,
+      @required this.cardFraction,
+      @required this.isLandscape})
       : super(key: key);
 
   final double width;
   final double cardFraction;
+  final bool isLandscape;
 
   @override
   Widget build(BuildContext context) {
@@ -151,7 +157,7 @@ class EmptyFoundation extends StatelessWidget {
         child: DottedBorder(
           child: Container(),
           borderType: BorderType.RRect,
-          radius: Radius.circular(12),
+          radius: Radius.circular(isLandscape ? 10 : 8),
         ));
   }
 }

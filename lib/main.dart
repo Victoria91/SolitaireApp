@@ -72,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           ? EdgeInsets.symmetric(vertical: 28, horizontal: 10)
                           : EdgeInsets.symmetric(vertical: 40, horizontal: 10),
                       child: Container(
-                        height: 500,
+                        height: mediaQuery.size.height,
                         child: Stack(
                           overflow: Overflow.visible,
                           children: [

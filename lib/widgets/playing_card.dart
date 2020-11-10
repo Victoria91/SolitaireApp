@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'dart:async';
+import 'dart:math';
 
 import '../models/card_model.dart';
 import 'card_column.dart';
@@ -135,24 +136,9 @@ class CardWidget extends StatelessWidget {
             ? LayoutBuilder(
                 builder: (BuildContext ctx, BoxConstraints constaints) {
                   return Column(children: [
-                    TitlePart(card.rank, card.suit, 'top'),
-                    // Icon(
-                    //   Icons.hail,
-                    //   size: 15,
-                    // ),
-                    // Icon(Icons.hail),
-                    // Icon(Icons.hail),
-                    Image(
-                      image: NetworkImage(
-                          'https://bfa.github.io/solitaire-js/img/face-jack-spade.png'),
-                      width: isLandscape
-                          ? constaints.maxWidth
-                          : constaints.maxWidth / 1.7,
-                      height: isLandscape
-                          ? constaints.maxHeight / 1.6
-                          : constaints.maxHeight / 1.9,
-                    ),
-                    TitlePart(card.rank, card.suit, 'down'),
+                    TitlePart(card, 'top'),
+                    ...buildCardPicture(card, constaints, isLandscape),
+                    TitlePart(card, 'down'),
                   ]);
                 },
               )
@@ -166,25 +152,56 @@ class CardWidget extends StatelessWidget {
               offset: Offset(0.0, 8),
             )
           ],
-          // boxShadow: [
-          //   BoxShadow(
-          //     color: Colors.grey.withOpacity(0.5),
-          //     spreadRadius: 5,
-          //     blurRadius: 7,
-          //     offset: Offset(0, 3), // changes position of shadow
-          //   ),
-          // ],
-          // border: Border.symmetric(
-          //     horizontal: BorderSide(width: 2.0, color: Colors.black)),
-          // Border(bottom: BorderSide(color: Theme.of(context).dividerColor))
-
-          // border: Border(
-          //   bottom: BorderSide(width: 2.0, color: Colors.black),
-          // ),
           color: card.played ? Colors.white : Colors.blue,
           borderRadius: BorderRadius.circular(
             isLandscape ? 10 : 8,
           ),
         ));
+  }
+
+  List<Widget> buildCardPicture(
+      CardModel card, BoxConstraints constaints, bool isLandscape) {
+    final color = card.isRed() ? Colors.red : Colors.black;
+
+    final icon = card.icon();
+
+    if (card.rank == 'A' || !isLandscape) {
+      return [
+        Icon(
+          icon,
+          size: isLandscape ? 70 : 27,
+          color: color,
+        ),
+      ];
+    } else if (['J', 'D', 'K'].contains(card.rank) && isLandscape) {
+      return [
+        Image(
+            image: NetworkImage(
+                'https://bfa.github.io/solitaire-js/img/face-jack-spade.png'),
+            width: constaints.maxWidth,
+            height: constaints.maxHeight / 1.6)
+      ];
+    } else {
+      return [
+        Icon(
+          icon,
+          size: 24,
+          color: color,
+        ),
+        Icon(
+          icon,
+          size: 24,
+          color: color,
+        ),
+        Transform.rotate(
+          angle: pi,
+          child: Icon(
+            icon,
+            size: 24,
+            color: color,
+          ),
+        )
+      ];
+    }
   }
 }
