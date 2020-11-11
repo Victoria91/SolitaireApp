@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:solitaire_app/widgets/card/center_part.dart';
 
 import 'dart:async';
-import 'dart:math';
 
 import '../models/card_model.dart';
 import 'card_column.dart';
@@ -73,7 +73,7 @@ class _PlayingCardState extends State<PlayingCard> {
       card: widget.card,
     );
 
-    final gameData = Provider.of<Game>(context);
+    final gameData = Provider.of<Game>(context, listen: false);
 
     return AnimatedPositioned(
       duration: Duration(milliseconds: 1400 - widget.columnIndex * 200),
@@ -137,7 +137,10 @@ class CardWidget extends StatelessWidget {
                 builder: (BuildContext ctx, BoxConstraints constaints) {
                   return Column(children: [
                     TitlePart(card, 'top'),
-                    ...buildCardPicture(card, constaints, isLandscape),
+                    CenterPart(
+                        card: card,
+                        constaints: constaints,
+                        isLandscape: isLandscape),
                     TitlePart(card, 'down'),
                   ]);
                 },
@@ -146,7 +149,7 @@ class CardWidget extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(),
           boxShadow: <BoxShadow>[
-            BoxShadow(
+            const BoxShadow(
               color: Colors.black54,
               blurRadius: 15.0,
               offset: Offset(0.0, 8),
@@ -157,51 +160,5 @@ class CardWidget extends StatelessWidget {
             isLandscape ? 10 : 8,
           ),
         ));
-  }
-
-  List<Widget> buildCardPicture(
-      CardModel card, BoxConstraints constaints, bool isLandscape) {
-    final color = card.isRed() ? Colors.red : Colors.black;
-
-    final icon = card.icon();
-
-    if (card.rank == 'A' || !isLandscape) {
-      return [
-        Icon(
-          icon,
-          size: isLandscape ? 70 : 27,
-          color: color,
-        ),
-      ];
-    } else if (['J', 'D', 'K'].contains(card.rank) && isLandscape) {
-      return [
-        Image(
-            image: NetworkImage(
-                'https://bfa.github.io/solitaire-js/img/face-jack-spade.png'),
-            width: constaints.maxWidth,
-            height: constaints.maxHeight / 1.6)
-      ];
-    } else {
-      return [
-        Icon(
-          icon,
-          size: 24,
-          color: color,
-        ),
-        Icon(
-          icon,
-          size: 24,
-          color: color,
-        ),
-        Transform.rotate(
-          angle: pi,
-          child: Icon(
-            icon,
-            size: 24,
-            color: color,
-          ),
-        )
-      ];
-    }
   }
 }

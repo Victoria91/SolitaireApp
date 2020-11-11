@@ -58,7 +58,7 @@ class _CardColumnState extends State<CardColumn> {
     final height = mediaQuery.size.height;
     final width = mediaQuery.size.width;
 
-    final providerData = Provider.of<Game>(context);
+    final providerData = Provider.of<Game>(context, listen: false);
     final verticalOffset = widget.isLandscape ? 120 : 90;
 
     return AnimatedPositioned(

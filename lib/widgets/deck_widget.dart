@@ -19,7 +19,7 @@ class DeckWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gameData = Provider.of<Game>(context);
+    final gameData = Provider.of<Game>(context, listen: false);
     final offsetBetweenCards = isLandscape ? 20 : 15;
 
     return Stack(
