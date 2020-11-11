@@ -131,7 +131,7 @@ class CardWidget extends StatelessWidget {
 
     return Container(
         width: width / (isLandscape ? 8 : 9),
-        height: width / 7 * 1.15,
+        height: width / 7 * 1.2,
         child: card.played
             ? LayoutBuilder(
                 builder: (BuildContext ctx, BoxConstraints constaints) {

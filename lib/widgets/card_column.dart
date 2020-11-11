@@ -85,7 +85,7 @@ class _CardColumnState extends State<CardColumn> {
 
             return true;
           },
-          builder: (ctx, data2, rejectedData) => Stack(
+          builder: (ctx, _candidateData, _rejectedData) => Stack(
             overflow: Overflow.visible,
             children: widget.cards
                 .asMap()

@@ -18,7 +18,7 @@ class TitlePart extends StatelessWidget {
 
     final textWidget = Text(card.rank,
         style: TextStyle(
-          fontSize: isLandscape ? 12 : 10,
+          fontSize: isLandscape ? 13 : 10,
           fontWeight: FontWeight.bold,
           color: color,
         ));

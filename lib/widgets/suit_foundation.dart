@@ -1,7 +1,9 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:solitaire_app/models/card_model.dart';
+import 'package:solitaire_app/providers/game.dart';
 import 'package:solitaire_app/widgets/playing_card.dart';
 
 import 'dart:async';
@@ -31,6 +33,7 @@ class SuitFoundation extends StatefulWidget {
       cardIndex: foundation['cardIndex'],
       from: foundation['from'],
       deckLength: foundation['deckLength'],
+      manual: foundation['manual'],
       prevCard: foundation['prev']);
 }
 
@@ -46,6 +49,7 @@ class _SuitFoundationState extends State<SuitFoundation> {
   final int deckLength;
   final int cardIndex;
   final bool isLandscape;
+  final bool manual;
 
   double newLeftValue;
 
@@ -54,6 +58,7 @@ class _SuitFoundationState extends State<SuitFoundation> {
       @required this.width,
       @required this.position,
       @required this.from,
+      @required this.manual,
       @required this.deckLength,
       @required this.prevCard,
       @required this.isLandscape,
@@ -64,7 +69,7 @@ class _SuitFoundationState extends State<SuitFoundation> {
         width / cardFraction * position +
         10 * position;
     // newLeftValue = width / 8 * 3.35 + width / 8 * position + 10 * position;
-    if (currentCard == null) {
+    if (currentCard == null || manual) {
       left = newLeftValue;
     } else {
       if (from[0] == "deck") {
@@ -99,6 +104,8 @@ class _SuitFoundationState extends State<SuitFoundation> {
 
   @override
   Widget build(BuildContext context) {
+    final providerData = Provider.of<Game>(context, listen: false);
+
     return Stack(
       overflow: Overflow.clip,
       children: [
@@ -117,21 +124,31 @@ class _SuitFoundationState extends State<SuitFoundation> {
                 ),
         ),
         AnimatedPositioned(
-          curve: Curves.fastOutSlowIn,
-          top: top,
-          left: left,
-          duration: Duration(milliseconds: 500),
-          child: (currentCard == null)
-              ? EmptyFoundation(
-                  width: widget.width,
-                  isLandscape: isLandscape,
-                  cardFraction: isLandscape ? 8 : 9,
-                )
-              : CardWidget(
-                  width: widget.width,
-                  isLandscape: isLandscape,
-                  card: currentCard),
-        ),
+            curve: Curves.fastOutSlowIn,
+            top: top,
+            left: left,
+            duration: Duration(milliseconds: 500),
+            child: DragTarget<Map>(
+              onAccept: (data) {
+                if (data['move_from_deck'] != null) {
+                  providerData.pushMoveToFoundationFromDeckEvent();
+                } else {
+                  providerData
+                      .pushMoveToFoundationFromColumnEvent(data['columnIndex']);
+                }
+              },
+              builder: (context, candidateData, rejectedData) =>
+                  (currentCard == null)
+                      ? EmptyFoundation(
+                          width: widget.width,
+                          isLandscape: isLandscape,
+                          cardFraction: isLandscape ? 8 : 9,
+                        )
+                      : CardWidget(
+                          width: widget.width,
+                          isLandscape: isLandscape,
+                          card: currentCard),
+            )),
       ],
     );
   }

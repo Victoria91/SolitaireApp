@@ -46,13 +46,17 @@ class DeckWidget extends StatelessWidget {
                           gameData.setDeck(deck),
                       onDragStarted: () => gameData.takeCardFromDeck(),
                       onDragCompleted: () async {
-                        var canMoveRes = await gameData.canMove(
-                            gameData.columns[gameData.activeColumnIndex].last
-                                .toServer(),
-                            deck.last.toServer());
+                        if (gameData.activeColumnIndex != null) {
+                          var canMoveRes = await gameData.canMove(
+                              gameData.columns[gameData.activeColumnIndex].last
+                                  .toServer(),
+                              deck.last.toServer());
 
-                        if (!canMoveRes) {
-                          gameData.setDeck(deck);
+                          if (!canMoveRes) {
+                            gameData.setDeck(deck);
+                          }
+
+                          gameData.unsetActiveColumnIndex();
                         }
                       },
                     )

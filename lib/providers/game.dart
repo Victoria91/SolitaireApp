@@ -7,8 +7,8 @@ import 'package:http/http.dart' as http;
 
 class Game with ChangeNotifier {
   // static const host_path = '://192.168.0.13:4000';
-  // static const host_path = '://localhost:4000';
-  static const host_path = 's://solitaire.dbykov.com';
+  static const host_path = '://localhost:4000';
+  // static const host_path = 's://solitaire.dbykov.com';
   final socket = PhoenixSocket("ws$host_path/socket/websocket");
 
   // final socket = PhoenixSocket("ws://localhost:4000/socket/websocket");
@@ -36,6 +36,11 @@ class Game with ChangeNotifier {
 
   void setActiveColumnIndex(int index) {
     activeColumnIndex = index;
+    notifyListeners();
+  }
+
+  void unsetActiveColumnIndex() {
+    activeColumnIndex = null;
     notifyListeners();
   }
 
@@ -99,6 +104,30 @@ class Game with ChangeNotifier {
 
       _setCardStateDeck(responseFromServer);
       _setCardStateColumns(responseFromServer);
+      unsetActiveColumnIndex();
+    });
+  }
+
+  void pushMoveToFoundationFromColumnEvent(columnIndex) {
+    _channel.push(event: "move_to_foundation_from_column", payload: {
+      'from_column': columnIndex
+    }).receive("ok", (responseFromServer) {
+      print('pushMoveToFoundationEvent response Ok');
+
+      _setCardStateColumns(responseFromServer);
+      _setCardStateFoundation(responseFromServer, true);
+
+      print(DateTime.now().millisecondsSinceEpoch);
+    });
+  }
+
+  void pushMoveToFoundationFromDeckEvent() {
+    _channel.push(event: "move_to_foundation_from_deck").receive("ok",
+        (responseFromServer) {
+      print('pushMoveToFoundationEvent response Ok');
+
+      _setCardStateDeck(responseFromServer);
+      _setCardStateFoundation(responseFromServer, true);
 
       print(DateTime.now().millisecondsSinceEpoch);
     });
@@ -159,7 +188,7 @@ class Game with ChangeNotifier {
     notifyListeners();
   }
 
-  void _setCardStateFoundation(Map response) {
+  void _setCardStateFoundation(Map response, [bool manual = false]) {
     ['club', 'diamond', 'heart', 'spade'].forEach((element) {
       final responseBySuit = response['foundation'][element];
       int fromCardIndex;
@@ -179,6 +208,7 @@ class Game with ChangeNotifier {
               'from': fromResponseBySuit,
               'cardIndex': fromCardIndex,
               'deckLength': response['deck'].length,
+              'manual': manual,
               'rank': CardModel.initFromDeck(element, responseBySuit['rank'])
             };
     });
