@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:solitaire_app/widgets/card/center_part.dart';
 
 import 'dart:async';
+import 'dart:math';
 
 import '../models/card_model.dart';
 import 'card_column.dart';
@@ -15,35 +16,57 @@ class PlayingCard extends StatefulWidget {
   final List<CardModel> cardColumn;
   final int cardIndex;
   final int columnIndex;
-  final bool dragging;
-  final Game providerData;
+  final bool gameInitial;
   final bool isLandscape;
 
-  PlayingCard(
-      {@required this.top,
-      @required this.providerData,
-      @required this.card,
-      @required this.cardColumn,
-      @required this.cardIndex,
-      @required this.columnIndex,
-      @required this.isLandscape,
-      this.dragging = false});
+  PlayingCard({
+    @required this.top,
+    @required this.gameInitial,
+    @required this.card,
+    @required this.cardColumn,
+    @required this.cardIndex,
+    @required this.columnIndex,
+    @required this.isLandscape,
+  });
 
   @override
-  _PlayingCardState createState() => _PlayingCardState(
-      dragging: dragging, updatedTop: top, gameInitial: providerData.initial);
+  _PlayingCardState createState() =>
+      _PlayingCardState(updatedTop: top, gameInitial: gameInitial);
 }
 
-class _PlayingCardState extends State<PlayingCard> {
+class _PlayingCardState extends State<PlayingCard>
+    with TickerProviderStateMixin {
   Timer _timer;
   var top = 0.0;
   final bool dragging;
   final double updatedTop;
   final bool gameInitial;
 
+  AnimationController _animationController;
+  Animation _animation;
+  bool animationFinished = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 250));
+    _animation = Tween(begin: pi, end: 0.0).animate(_animationController)
+      ..addListener(() {
+        setState(() {});
+      })
+      ..addStatusListener((status) {
+        setState(() {
+          if (status == AnimationStatus.completed) {
+            animationFinished = true;
+          }
+        });
+      });
+  }
+
   _PlayingCardState({this.dragging, this.updatedTop, this.gameInitial}) {
-    if (!dragging && gameInitial) {
-      _timer = Timer(Duration(microseconds: 1000), () {
+    if (gameInitial) {
+      _timer = Timer(Duration(microseconds: 500), () {
         setState(() {
           top = widget.top;
         });
@@ -55,6 +78,8 @@ class _PlayingCardState extends State<PlayingCard> {
 
   @override
   void dispose() {
+    _animationController.dispose();
+
     super.dispose();
 
     if (_timer != null) {
@@ -75,39 +100,58 @@ class _PlayingCardState extends State<PlayingCard> {
 
     final gameData = Provider.of<Game>(context, listen: false);
 
+    if (widget.card.newCard) {
+      _animationController.forward();
+      gameData.unsetColumnNewCard(widget.columnIndex);
+    }
+
+    final draggableCard = Draggable<Map>(
+      child: cardwiget,
+      childWhenDragging: cardwiget,
+      onDraggableCanceled: (_velocity, _offset) =>
+          gameData.setColumns(widget.columnIndex, widget.cardColumn),
+      onDragStarted: () => gameData.setColumns(
+          widget.columnIndex, widget.cardColumn.sublist(0, widget.cardIndex)),
+      feedback: Material(
+        color: Colors.transparent,
+        child: Container(
+          width: width,
+          height: width / 7 * 1.15 +
+              widget.cardColumn.sublist(widget.cardIndex).length * 20 -
+              1,
+          child: Stack(children: [
+            CardColumn(
+                width: width,
+                gameInitial: gameData.initial,
+                isLandscape: widget.isLandscape,
+                dragging: true,
+                cards: widget.cardColumn.sublist(widget.cardIndex),
+                columnIndex: widget.columnIndex),
+          ]),
+        ),
+      ),
+      data: {'columnIndex': widget.columnIndex, 'cardIndex': widget.cardIndex},
+    );
     return AnimatedPositioned(
       duration: Duration(milliseconds: 1400 - widget.columnIndex * 200),
       curve: Curves.bounceIn,
       top: top,
       child: widget.card.played
-          ? Draggable<Map>(
-              child: cardwiget,
-              childWhenDragging: cardwiget,
-              onDraggableCanceled: (_velocity, _offset) =>
-                  gameData.setColumns(widget.columnIndex, widget.cardColumn),
-              onDragStarted: () => gameData.setColumns(widget.columnIndex,
-                  widget.cardColumn.sublist(0, widget.cardIndex)),
-              feedback: Material(
-                color: Colors.transparent,
-                child: Container(
-                  width: width,
-                  height: width / 7 * 1.15 +
-                      widget.cardColumn.sublist(widget.cardIndex).length * 20 -
-                      1,
-                  child: Stack(children: [
-                    CardColumn(
-                        isLandscape: widget.isLandscape,
-                        dragging: true,
-                        cards: widget.cardColumn.sublist(widget.cardIndex),
-                        columnIndex: widget.columnIndex),
-                  ]),
-                ),
-              ),
-              data: {
-                'columnIndex': widget.columnIndex,
-                'cardIndex': widget.cardIndex
-              },
-            )
+          ? (widget.card.newCard
+              ? Transform(
+                  alignment: FractionalOffset.center,
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.001)
+                    ..rotateY(_animation.value),
+                  child: animationFinished
+                      ? draggableCard
+                      : CardWidget(
+                          width: width,
+                          isLandscape: widget.isLandscape,
+                          card: CardModel(played: false),
+                        ),
+                )
+              : draggableCard)
           : cardwiget,
     );
   }

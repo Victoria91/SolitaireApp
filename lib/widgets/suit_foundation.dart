@@ -14,6 +14,7 @@ class SuitFoundation extends StatefulWidget {
   final int position;
   final Map foundation;
   final bool isLandscape;
+  final bool gameInitial;
 
   SuitFoundation(
       {Key key,
@@ -21,6 +22,7 @@ class SuitFoundation extends StatefulWidget {
       @required this.foundation,
       @required this.suit,
       @required this.position,
+      @required this.gameInitial,
       @required this.isLandscape})
       : super(key: key ?? ValueKey([foundation]));
 
@@ -33,11 +35,14 @@ class SuitFoundation extends StatefulWidget {
       cardIndex: foundation['cardIndex'],
       from: foundation['from'],
       deckLength: foundation['deckLength'],
+      changed: foundation['changed'],
       manual: foundation['manual'],
+      gameInitial: gameInitial,
       prevCard: foundation['prev']);
 }
 
-class _SuitFoundationState extends State<SuitFoundation> {
+class _SuitFoundationState extends State<SuitFoundation>
+    with TickerProviderStateMixin {
   Timer _timer;
   var left;
   var top = 0.0;
@@ -50,11 +55,22 @@ class _SuitFoundationState extends State<SuitFoundation> {
   final int cardIndex;
   final bool isLandscape;
   final bool manual;
-
+  final bool gameInitial;
   double newLeftValue;
+  final bool changed;
+
+  AnimationController rotationController;
+
+  @override
+  void initState() {
+    rotationController = AnimationController(
+        duration: const Duration(milliseconds: 500), vsync: this);
+    super.initState();
+  }
 
   _SuitFoundationState(
       {@required this.currentCard,
+      @required this.changed,
       @required this.width,
       @required this.position,
       @required this.from,
@@ -62,14 +78,15 @@ class _SuitFoundationState extends State<SuitFoundation> {
       @required this.deckLength,
       @required this.prevCard,
       @required this.isLandscape,
+      @required this.gameInitial,
       @required this.cardIndex}) {
     final cardFraction = isLandscape ? 8 : 9;
     final ratio = isLandscape ? 3.40 : 3.7;
     newLeftValue = width / cardFraction * ratio +
         width / cardFraction * position +
         10 * position;
-    // newLeftValue = width / 8 * 3.35 + width / 8 * position + 10 * position;
-    if (currentCard == null || manual) {
+
+    if (currentCard == null || manual || !changed) {
       left = newLeftValue;
     } else {
       if (from[0] == "deck") {
@@ -87,6 +104,7 @@ class _SuitFoundationState extends State<SuitFoundation> {
         setState(() {
           left = newLeftValue;
           top = 0;
+          Provider.of<Game>(context, listen: false).unsetChanged();
         });
       });
     }
@@ -94,6 +112,7 @@ class _SuitFoundationState extends State<SuitFoundation> {
 
   @override
   void dispose() {
+    rotationController.dispose();
     super.dispose();
 
     if (_timer != null) {
@@ -104,8 +123,29 @@ class _SuitFoundationState extends State<SuitFoundation> {
 
   @override
   Widget build(BuildContext context) {
+    if (currentCard == null || manual || !changed) {
+      rotationController.forward(from: 0.0);
+    }
+
     final providerData = Provider.of<Game>(context, listen: false);
 
+    final dragTarget = DragTarget<Map>(
+      onAccept: (data) {
+        if (data['move_from_deck'] != null) {
+          providerData.pushMoveToFoundationFromDeckEvent();
+        } else {
+          providerData.pushMoveToFoundationFromColumnEvent(data['columnIndex']);
+        }
+      },
+      builder: (context, candidateData, rejectedData) => (currentCard == null)
+          ? EmptyFoundation(
+              width: widget.width,
+              isLandscape: isLandscape,
+              cardFraction: isLandscape ? 8 : 9,
+            )
+          : CardWidget(
+              width: widget.width, isLandscape: isLandscape, card: currentCard),
+    );
     return Stack(
       overflow: Overflow.clip,
       children: [
@@ -128,27 +168,13 @@ class _SuitFoundationState extends State<SuitFoundation> {
             top: top,
             left: left,
             duration: Duration(milliseconds: 500),
-            child: DragTarget<Map>(
-              onAccept: (data) {
-                if (data['move_from_deck'] != null) {
-                  providerData.pushMoveToFoundationFromDeckEvent();
-                } else {
-                  providerData
-                      .pushMoveToFoundationFromColumnEvent(data['columnIndex']);
-                }
-              },
-              builder: (context, candidateData, rejectedData) =>
-                  (currentCard == null)
-                      ? EmptyFoundation(
-                          width: widget.width,
-                          isLandscape: isLandscape,
-                          cardFraction: isLandscape ? 8 : 9,
-                        )
-                      : CardWidget(
-                          width: widget.width,
-                          isLandscape: isLandscape,
-                          card: currentCard),
-            )),
+            child: (currentCard == null || manual || !changed)
+                ? dragTarget
+                : RotationTransition(
+                    turns:
+                        Tween(begin: 0.0, end: 1.0).animate(rotationController),
+                    child: dragTarget,
+                  )),
       ],
     );
   }

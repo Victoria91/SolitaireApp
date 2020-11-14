@@ -13,17 +13,24 @@ class CardColumn extends StatefulWidget {
   final bool dragging;
   final double width;
   final bool isLandscape;
+  final bool gameInitial;
 
   CardColumn(
-      {@required this.cards,
+      {Key key,
+      @required this.cards,
       @required this.columnIndex,
       @required this.isLandscape,
-      this.width,
-      this.dragging = false});
+      @required this.gameInitial,
+      @required this.width,
+      this.dragging = false})
+      : super(key: key ?? ObjectKey([cards]));
 
   @override
-  _CardColumnState createState() =>
-      _CardColumnState(dragging: dragging, width: width);
+  _CardColumnState createState() => _CardColumnState(
+      dragging: dragging,
+      width: width,
+      gameInitial: gameInitial,
+      columnIndex: columnIndex);
 }
 
 class _CardColumnState extends State<CardColumn> {
@@ -31,14 +38,20 @@ class _CardColumnState extends State<CardColumn> {
   var left = 0.0;
   final bool dragging;
   final double width;
+  final int columnIndex;
+  final bool gameInitial;
 
-  _CardColumnState({this.dragging, this.width}) {
-    if (!dragging) {
+  _CardColumnState(
+      {this.dragging, this.width, this.gameInitial, this.columnIndex}) {
+    if (gameInitial) {
       _timer = Timer(Duration(microseconds: 1000), () {
         setState(() {
           left = widget.columnIndex * width / 7;
+          Provider.of<Game>(context, listen: false).unSetInitial();
         });
       });
+    } else if (!dragging) {
+      left = columnIndex * width / 7;
     }
   }
 
@@ -93,8 +106,7 @@ class _CardColumnState extends State<CardColumn> {
                 .map(
                   (card) => PlayingCard(
                       isLandscape: widget.isLandscape,
-                      providerData: providerData,
-                      dragging: widget.dragging,
+                      gameInitial: gameInitial,
                       top: widget.dragging
                           ? (card.key * 18).toDouble()
                           : (verticalOffset + card.key * 18).toDouble(),

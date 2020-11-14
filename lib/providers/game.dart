@@ -7,8 +7,8 @@ import 'package:http/http.dart' as http;
 
 class Game with ChangeNotifier {
   // static const host_path = '://192.168.0.13:4000';
-  static const host_path = '://localhost:4000';
-  // static const host_path = 's://solitaire.dbykov.com';
+  // static const host_path = '://localhost:4000';
+  static const host_path = 's://solitaire.dbykov.com';
   final socket = PhoenixSocket("ws$host_path/socket/websocket");
 
   // final socket = PhoenixSocket("ws://localhost:4000/socket/websocket");
@@ -17,7 +17,9 @@ class Game with ChangeNotifier {
   List<List<CardModel>> _columns = [];
   List<CardModel> _deck = [];
   // if game has just started (needed for animation condition)
-  bool initial = true;
+  bool _initial = true;
+
+  int _deckLength = 0;
 
   int activeColumnIndex;
 
@@ -34,9 +36,24 @@ class Game with ChangeNotifier {
 
   List<CardModel> get deck => _deck;
 
+  int get deckLength => _deckLength;
+
+  bool get initial => _initial;
+
   void setActiveColumnIndex(int index) {
     activeColumnIndex = index;
     notifyListeners();
+  }
+
+  void startNewGame() {
+    _initial = true;
+    notifyListeners();
+
+    _channel.push(event: "start_new_game").receive("ok", (response) {
+      _setCardStateDeck(response);
+      _setCardStateColumns(response);
+      _setCardStateFoundation(response);
+    });
   }
 
   void unsetActiveColumnIndex() {
@@ -55,14 +72,14 @@ class Game with ChangeNotifier {
     // Make the request to the server to join the channel
     _channel.join().receive("ok", (responseFromServer) {
       print("RECEIVED OK ON JOIN");
-      _setCardStateColumns(responseFromServer, false);
+      _setCardStateColumns(responseFromServer);
       _setCardStateDeck(responseFromServer);
       _setCardStateFoundation(responseFromServer);
     });
   }
 
   void unSetInitial() {
-    initial = false;
+    _initial = false;
     notifyListeners();
   }
 
@@ -138,13 +155,21 @@ class Game with ChangeNotifier {
     notifyListeners();
   }
 
+  void unsetColumnNewCard(int columnIndex) {
+    final lastCard = _columns[columnIndex].last;
+    _columns[columnIndex].last = CardModel(
+        newCard: false,
+        suit: lastCard.suit,
+        rank: lastCard.rank,
+        played: lastCard.played);
+  }
+
   void takeCardFromDeck() {
     _deck = _deck.take(deck.length - 1).toList();
     notifyListeners();
   }
 
   void setDeck(List<CardModel> cards) {
-    print(cards);
     _deck = cards;
     notifyListeners();
   }
@@ -159,27 +184,29 @@ class Game with ChangeNotifier {
         .toList()
         .cast<CardModel>();
 
+    _deckLength = response['deck_length'];
+
     notifyListeners();
   }
 
-  void _setCardStateColumns(Map response, [bool needUnsetInitial = true]) {
-    if (needUnsetInitial) {
-      unSetInitial();
-    }
+  void _setCardStateColumns(Map response) {
     _columns = response['columns']
-        .map((res) => res['cards']
+        .asMap()
+        .entries
+        .map((res) => res.value['cards']
             .asMap()
             .entries
             .toList()
             .reversed
             .toList()
-            .map((card) {
-              return CardModel.initFormServer(
-                  card.value[0],
-                  card.value[1].toString(),
-                  res['cards'].length - card.key,
-                  res['unplayed']);
-            })
+            .map((card) => CardModel.initFormServer(
+                card.value[0],
+                card.value[1].toString(),
+                res.value['cards'].length - card.key,
+                res.value['unplayed'],
+                card.key == 0 &&
+                    _columns.isNotEmpty &&
+                    cardHadTurnedOver(res.value['cards'], _columns[res.key])))
             .toList()
             .cast<CardModel>())
         .toList()
@@ -188,29 +215,41 @@ class Game with ChangeNotifier {
     notifyListeners();
   }
 
+  bool cardHadTurnedOver(currentCardColumn, previousCardColumn) {
+    return previousCardColumn.length == currentCardColumn.length &&
+        previousCardColumn.last.played == false;
+  }
+
   void _setCardStateFoundation(Map response, [bool manual = false]) {
-    ['club', 'diamond', 'heart', 'spade'].forEach((element) {
-      final responseBySuit = response['foundation'][element];
+    ['club', 'diamond', 'heart', 'spade'].forEach((suit) {
+      final responseBySuit = response['foundation'][suit];
       int fromCardIndex;
-      print(responseBySuit['from']);
       final fromResponseBySuit = responseBySuit['from'];
       if (fromResponseBySuit != null && fromResponseBySuit[0] == "column") {
         fromCardIndex =
             response['columns'][fromResponseBySuit[1]]['cards'].length + 1;
-        print('fromCardIndex$fromCardIndex');
       }
-      foundation[element] = (responseBySuit['rank'] == null)
+      foundation[suit] = (responseBySuit['rank'] == null)
           ? {}
           : {
               'prev': responseBySuit['prev'] == null
                   ? null
-                  : CardModel.initFromDeck(element, responseBySuit['prev']),
+                  : CardModel.initFromDeck(suit, responseBySuit['prev']),
               'from': fromResponseBySuit,
               'cardIndex': fromCardIndex,
               'deckLength': response['deck'].length,
               'manual': manual,
-              'rank': CardModel.initFromDeck(element, responseBySuit['rank'])
+              'changed': responseBySuit['rank'] != foundation[suit]['rank'],
+              'rank': CardModel.initFromDeck(suit, responseBySuit['rank'])
             };
+    });
+
+    notifyListeners();
+  }
+
+  void unsetChanged() {
+    ['club', 'diamond', 'heart', 'spade'].forEach((element) {
+      foundation[element].addAll({"changed": false});
     });
 
     notifyListeners();

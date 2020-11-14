@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:solitaire_app/widgets/suit_foundation.dart';
@@ -39,6 +40,13 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  Future future;
+  @override
+  void initState() {
+    future = Provider.of<Game>(context, listen: false).fetchAndLoadGame();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     Color gradientStart =
@@ -50,14 +58,23 @@ class _MyHomePageState extends State<MyHomePage> {
     final isLandscape = mediaQuery.orientation == Orientation.landscape;
 
     return Scaffold(
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.miniCenterDocked,
+      floatingActionButton: Container(
+        width: 30,
+        child: FloatingActionButton(
+          child: Icon(Icons.add_outlined),
+          onPressed: () {
+            _showMyDialog(context);
+          },
+        ),
+      ),
       backgroundColor: Colors.purple,
       body: FutureBuilder(
-        future: gameProvider.fetchAndLoadGame(),
-        builder: (ctx, gameSnapshot) => gameSnapshot.connectionState ==
+        future: future,
+        builder: (context, snapshot) => snapshot.connectionState ==
                 ConnectionState.waiting
-            ? Center(
-                child: CircularProgressIndicator(),
-              )
+            ? Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
                 child: Container(
                   decoration: BoxDecoration(
@@ -76,13 +93,19 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Stack(
                           overflow: Overflow.visible,
                           children: [
-                            InkWell(
-                              onTap: gameProvider.pushChangeEvent,
-                              child: CardWidget(
-                                isLandscape: isLandscape,
-                                card: CardModel(played: false),
-                                width: mediaQuery.size.width,
-                              ),
+                            Selector<Game, int>(
+                              selector: (ctx, game) => gameProvider.deckLength,
+                              builder: (context, deckLength, child) =>
+                                  deckLength > 0
+                                      ? InkWell(
+                                          onTap: gameProvider.pushChangeEvent,
+                                          child: CardWidget(
+                                            isLandscape: isLandscape,
+                                            card: CardModel(played: false),
+                                            width: mediaQuery.size.width,
+                                          ),
+                                        )
+                                      : Container(),
                             ),
                             Container(
                               width: 180,
@@ -107,14 +130,34 @@ class _MyHomePageState extends State<MyHomePage> {
                             buildCardColumn(4, isLandscape, context),
                             buildCardColumn(5, isLandscape, context),
                             buildCardColumn(6, isLandscape, context),
-                            buildFoundation(mediaQuery, 'spade', 0,
-                                gameProvider.deck.length, isLandscape),
-                            buildFoundation(mediaQuery, 'club', 1,
-                                gameProvider.deck.length, isLandscape),
-                            buildFoundation(mediaQuery, 'diamond', 2,
-                                gameProvider.deck.length, isLandscape),
-                            buildFoundation(mediaQuery, 'heart', 3,
-                                gameProvider.deck.length, isLandscape),
+                            buildFoundation(
+                                mediaQuery,
+                                'spade',
+                                0,
+                                gameProvider.deck.length,
+                                isLandscape,
+                                gameProvider.initial),
+                            buildFoundation(
+                                mediaQuery,
+                                'club',
+                                1,
+                                gameProvider.deck.length,
+                                isLandscape,
+                                gameProvider.initial),
+                            buildFoundation(
+                                mediaQuery,
+                                'diamond',
+                                2,
+                                gameProvider.deck.length,
+                                isLandscape,
+                                gameProvider.initial),
+                            buildFoundation(
+                                mediaQuery,
+                                'heart',
+                                3,
+                                gameProvider.deck.length,
+                                isLandscape,
+                                gameProvider.initial),
                           ],
                         ),
                       )),
@@ -125,7 +168,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Selector<Game, Map> buildFoundation(MediaQueryData mediaQuery, String suit,
-          int position, int deckLength, bool isLandscape) =>
+          int position, int deckLength, bool isLandscape, bool gameInitial) =>
       Selector<Game, Map>(selector: (ctx, game) {
         return (game.foundation[suit] != null) ? game.foundation[suit] : null;
       }, builder: (ctx, foundation, child) {
@@ -139,7 +182,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 width: mediaQuery.size.width,
                 suit: CardModel.fetchSuit(suit),
                 position: position,
-              );
+                gameInitial: gameInitial);
       }, shouldRebuild: (previous, next) {
         if (previous == null) {
           return true;
@@ -153,11 +196,10 @@ class _MyHomePageState extends State<MyHomePage> {
       selector: (ctx, game) =>
           game.columns.isNotEmpty ? game.columns[index] : null,
       builder: (ctx, columnsData, child) {
-        print('BUILDING COLUMNS+++$index');
-
         return columnsData == null
             ? Container()
             : CardColumn(
+                gameInitial: Provider.of<Game>(context, listen: false).initial,
                 isLandscape: isLandscape,
                 cards: columnsData,
                 columnIndex: index,
@@ -165,4 +207,36 @@ class _MyHomePageState extends State<MyHomePage> {
       },
     );
   }
+}
+
+Future<void> _showMyDialog(BuildContext context) async {
+  return showDialog<void>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(20.0))),
+        title: const Center(child: const Text('Start new game')),
+        content: Text(
+          'Are you sure you want to start new game?',
+          textAlign: TextAlign.center,
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: Text('Ok'),
+            onPressed: () {
+              Provider.of<Game>(context, listen: false).startNewGame();
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
 }

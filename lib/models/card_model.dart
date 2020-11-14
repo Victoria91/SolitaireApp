@@ -31,18 +31,22 @@ class CardModel {
   final CardSuit suit;
   final String rank;
   final bool played;
+  bool newCard;
 
-  CardModel({this.played, this.rank, this.suit});
+  CardModel({@required this.played, this.rank, this.suit, this.newCard});
 
   CardModel.initFormServer(
-      String suitString, String rankString, int index, int unplayed)
+      String suitString, String rankString, int index, int unplayed,
+      [newCard = false])
       : rank = rankString,
         suit = fetchSuit(suitString),
+        newCard = newCard,
         played = index > unplayed;
 
   CardModel.initFromDeck(String suitString, String rankString)
       : rank = rankString,
         suit = fetchSuit(suitString),
+        newCard = false,
         played = true;
 
   List<String> toServer() {
@@ -51,7 +55,7 @@ class CardModel {
 
   @override
   String toString() {
-    return '$rank -- $suit';
+    return '$rank -- $suit -- $newCard';
   }
 
   @override
