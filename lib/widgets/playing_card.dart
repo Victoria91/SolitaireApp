@@ -133,8 +133,8 @@ class _PlayingCardState extends State<PlayingCard>
       data: {'columnIndex': widget.columnIndex, 'cardIndex': widget.cardIndex},
     );
     return AnimatedPositioned(
-      duration: Duration(milliseconds: 1400 - widget.columnIndex * 200),
-      curve: Curves.bounceIn,
+      duration: Duration(milliseconds: 1200 - widget.columnIndex * 200),
+      curve: Curves.ease,
       top: top,
       child: widget.card.played
           ? (widget.card.newCard

@@ -47,7 +47,7 @@ class _CardColumnState extends State<CardColumn> {
       _timer = Timer(Duration(microseconds: 1000), () {
         setState(() {
           left = widget.columnIndex * width / 7;
-          Provider.of<Game>(context, listen: false).unSetInitial();
+          Provider.of<Game>(context, listen: false).setInitial();
         });
       });
     } else if (!dragging) {
@@ -75,7 +75,7 @@ class _CardColumnState extends State<CardColumn> {
     final verticalOffset = widget.isLandscape ? 120 : 90;
 
     return AnimatedPositioned(
-      duration: Duration(milliseconds: 1400 - widget.columnIndex * 200),
+      duration: Duration(milliseconds: 1200 - widget.columnIndex * 200),
       left: left,
       child: Container(
         width: width / 8,

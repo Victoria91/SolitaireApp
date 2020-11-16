@@ -23,6 +23,8 @@ class Game with ChangeNotifier {
 
   int activeColumnIndex;
 
+  bool _win = false;
+
   Map<String, Map> _foundation = {
     'club': null,
     'diamond': null,
@@ -40,14 +42,16 @@ class Game with ChangeNotifier {
 
   bool get initial => _initial;
 
+  bool get win => _win;
+
   void setActiveColumnIndex(int index) {
     activeColumnIndex = index;
     notifyListeners();
   }
 
   void startNewGame() {
-    _initial = true;
-    notifyListeners();
+    setInitial(true);
+    _updateWinState(false);
 
     _channel.push(event: "start_new_game").receive("ok", (response) {
       _setCardStateDeck(response);
@@ -68,6 +72,9 @@ class Game with ChangeNotifier {
     _channel = socket.channel("game");
     // Setup listeners for channel events
     _channel.on("update_game", _updateGameScreen);
+    _channel.on("win", (_payload, _ref, _joinRef) {
+      _updateWinState(true);
+    });
 
     // Make the request to the server to join the channel
     _channel.join().receive("ok", (responseFromServer) {
@@ -78,8 +85,13 @@ class Game with ChangeNotifier {
     });
   }
 
-  void unSetInitial() {
-    _initial = false;
+  void _updateWinState(bool newWin) {
+    _win = newWin;
+    notifyListeners();
+  }
+
+  void setInitial([bool initial = false]) {
+    _initial = initial;
     notifyListeners();
   }
 

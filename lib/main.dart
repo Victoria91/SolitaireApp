@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'package:solitaire_app/widgets/confetti.dart';
 import 'package:solitaire_app/widgets/suit_foundation.dart';
 
 import 'widgets/card_column.dart';
@@ -41,6 +43,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Future future;
+
   @override
   void initState() {
     future = Provider.of<Game>(context, listen: false).fetchAndLoadGame();
@@ -158,6 +161,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                 gameProvider.deck.length,
                                 isLandscape,
                                 gameProvider.initial),
+                            Selector<Game, bool>(
+                              selector: (ctx, game) => game.win,
+                              builder: (context, win, child) =>
+                                  win ? Confetti() : Container(),
+                            ),
                           ],
                         ),
                       )),
