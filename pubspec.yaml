@@ -30,6 +30,9 @@ dependencies:
   cupertino_icons: ^1.0.0
   phoenix_wings: ^0.2.1
   provider: ^4.3.2+2
+  http: ^0.12.2
+  dotted_border: ^1.0.6
+  confetti: ^0.5.4+1
 
 dev_dependencies:
   flutter_test:
@@ -74,5 +77,20 @@ flutter:
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
   #
+
+  fonts:
+    - family:  Heart
+      fonts:
+       - asset: assets/fonts/Heart.ttf
+    - family:  Diamond
+      fonts:
+       - asset: assets/fonts/Diamond.ttf
+    - family:  Spade
+      fonts:
+       - asset: assets/fonts/Spade.ttf
+    - family:  Club
+      fonts:
+      - asset: assets/fonts/Club.ttf
+
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

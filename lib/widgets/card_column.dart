@@ -1,18 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'dart:async';
+
 import '../providers/game.dart';
 import '../models/card_model.dart';
 import '../widgets/playing_card.dart';
 
-class CardColumn extends StatelessWidget {
+class CardColumn extends StatefulWidget {
   final List<CardModel> cards;
   final int columnIndex;
+  final bool dragging;
+  final double width;
+  final bool isLandscape;
+  final bool gameInitial;
 
-  CardColumn({
-    @required this.cards,
-    @required this.columnIndex,
-  });
+  CardColumn(
+      {Key key,
+      @required this.cards,
+      @required this.columnIndex,
+      @required this.isLandscape,
+      @required this.gameInitial,
+      @required this.width,
+      this.dragging = false})
+      : super(key: key ?? ObjectKey([cards]));
+
+  @override
+  _CardColumnState createState() => _CardColumnState(
+      dragging: dragging,
+      width: width,
+      gameInitial: gameInitial,
+      columnIndex: columnIndex);
+}
+
+class _CardColumnState extends State<CardColumn> {
+  Timer _timer;
+  var left = 0.0;
+  final bool dragging;
+  final double width;
+  final int columnIndex;
+  final bool gameInitial;
+
+  _CardColumnState(
+      {this.dragging, this.width, this.gameInitial, this.columnIndex}) {
+    if (gameInitial) {
+      _timer = Timer(Duration(microseconds: 1000), () {
+        setState(() {
+          left = widget.columnIndex * width / 7;
+          Provider.of<Game>(context, listen: false).setInitial();
+        });
+      });
+    } else if (!dragging) {
+      left = columnIndex * width / 7;
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    if (_timer != null) {
+      print('disposing...');
+      _timer.cancel();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,40 +71,52 @@ class CardColumn extends StatelessWidget {
     final height = mediaQuery.size.height;
     final width = mediaQuery.size.width;
 
-    final providerData = Provider.of<Game>(context);
+    final providerData = Provider.of<Game>(context, listen: false);
+    final verticalOffset = widget.isLandscape ? 120 : 90;
 
-    return Container(
-      width: width / 8,
-      height: height,
-      child: DragTarget<Map>(
-        onAccept: (data) {
-          if (data['move_from_deck'] != null) {
-            providerData.pushMoveFromDeckEvent(columnIndex);
-          } else {
-            providerData.pushMoveFromColumnEvent(
-                data['columnIndex'], data['cardIndex'], columnIndex);
-          }
-        },
-        onWillAccept: (data) {
-          if (data['columnIndex'] == columnIndex) {
-            return false;
-          }
+    return AnimatedPositioned(
+      duration: Duration(milliseconds: 1200 - widget.columnIndex * 200),
+      left: left,
+      child: Container(
+        width: width / 8,
+        height: height,
+        child: DragTarget<Map>(
+          onAccept: (data) {
+            if (data['move_from_deck'] != null) {
+              providerData.setActiveColumnIndex(widget.columnIndex);
+              providerData.pushMoveFromDeckEvent(widget.columnIndex);
+            } else {
+              print('pushMoveFromColumnEvent+++');
+              providerData.pushMoveFromColumnEvent(
+                  data['columnIndex'], data['cardIndex'], widget.columnIndex);
+            }
+          },
+          onWillAccept: (data) {
+            if (data['columnIndex'] == widget.columnIndex) {
+              return false;
+            }
 
-          return true;
-        },
-        builder: (ctx, data2, rejectedData) => Stack(
-          children: cards
-              .asMap()
-              .entries
-              .map(
-                (card) => PlayingCard(
-                    top: (card.key * 20).toDouble(),
-                    card: card.value,
-                    cardColumn: cards,
-                    columnIndex: columnIndex,
-                    cardIndex: card.key),
-              )
-              .toList(),
+            return true;
+          },
+          builder: (ctx, _candidateData, _rejectedData) => Stack(
+            overflow: Overflow.visible,
+            children: widget.cards
+                .asMap()
+                .entries
+                .map(
+                  (card) => PlayingCard(
+                      isLandscape: widget.isLandscape,
+                      gameInitial: gameInitial,
+                      top: widget.dragging
+                          ? (card.key * 18).toDouble()
+                          : (verticalOffset + card.key * 18).toDouble(),
+                      card: card.value,
+                      cardColumn: widget.cards,
+                      columnIndex: widget.columnIndex,
+                      cardIndex: card.key),
+                )
+                .toList(),
+          ),
         ),
       ),
     );
