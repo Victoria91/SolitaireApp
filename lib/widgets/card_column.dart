@@ -82,11 +82,14 @@ class _CardColumnState extends State<CardColumn> {
         height: height,
         child: DragTarget<Map>(
           onAccept: (data) {
-            if (data['move_from_deck'] != null) {
+            if (data['move_from_deck'] == true) {
               providerData.setActiveColumnIndex(widget.columnIndex);
               providerData.pushMoveFromDeckEvent(widget.columnIndex);
+            } else if (data['move_from_foundation'] == true) {
+              print(data['suit']);
+              providerData.pushMoveFromFoundation(
+                  data['suit'], widget.columnIndex);
             } else {
-              print('pushMoveFromColumnEvent+++');
               providerData.pushMoveFromColumnEvent(
                   data['columnIndex'], data['cardIndex'], widget.columnIndex);
             }

@@ -50,7 +50,7 @@ class CardModel {
         played = true;
 
   List<String> toServer() {
-    return [fetchString(suit), rank];
+    return [this.fetcSuitString(), rank];
   }
 
   @override
@@ -89,31 +89,13 @@ class CardModel {
       CardSuit.spade: Spade.spades
     }[suit];
   }
-}
 
-String fetchString(CardSuit suit) {
-  return {
-    CardSuit.spade: 'spade',
-    CardSuit.club: 'club',
-    CardSuit.diamond: 'diamond',
-    CardSuit.heart: 'heart'
-  }[suit];
-}
-
-CardRank fetchRank(String rankString) {
-  return {
-    'A': CardRank.ace,
-    '2': CardRank.two,
-    '3': CardRank.three,
-    '4': CardRank.four,
-    '5': CardRank.five,
-    '6': CardRank.six,
-    '7': CardRank.seven,
-    '8': CardRank.eight,
-    '9': CardRank.nine,
-    '10': CardRank.ten,
-    'J': CardRank.jack,
-    'Q': CardRank.queen,
-    'K': CardRank.king
-  }[rankString];
+  String fetcSuitString() {
+    return {
+      CardSuit.spade: 'spade',
+      CardSuit.club: 'club',
+      CardSuit.diamond: 'diamond',
+      CardSuit.heart: 'heart'
+    }[suit];
+  }
 }

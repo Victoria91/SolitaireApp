@@ -1,10 +1,10 @@
-import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:solitaire_app/models/card_model.dart';
 import 'package:solitaire_app/providers/game.dart';
 import 'package:solitaire_app/widgets/playing_card.dart';
+import './empty_foundation.dart';
 
 import 'dart:async';
 
@@ -86,10 +86,10 @@ class _SuitFoundationState extends State<SuitFoundation>
         width / cardFraction * position +
         10 * position;
 
-    if (currentCard == null || manual || !changed) {
+    if (!_needRotate() || from == null) {
       left = newLeftValue;
     } else {
-      if (from[0] == "deck") {
+      if (from[0] == 'deck') {
         // card was moved from deck, animate only left property
 
         final cardOffset = isLandscape ? 20 : 15;
@@ -121,33 +121,53 @@ class _SuitFoundationState extends State<SuitFoundation>
     }
   }
 
+  // whether rotate animation is needed. Rotation
+  // is used when card was auto-moved, when suit foundatiom
+  // changed and current card is non null
+  bool _needRotate() {
+    return !(currentCard == null || manual || !changed);
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (currentCard == null || manual || !changed) {
+    if (_needRotate()) {
       rotationController.forward(from: 0.0);
     }
 
     final providerData = Provider.of<Game>(context, listen: false);
+    final currentCardWidget = CardWidget(
+      width: widget.width,
+      isLandscape: isLandscape,
+      card: currentCard,
+    );
 
     final dragTarget = DragTarget<Map>(
       onAccept: (data) {
-        if (data['move_from_deck'] != null) {
+        if (data['move_from_deck'] == true) {
           providerData.pushMoveToFoundationFromDeckEvent();
         } else {
           providerData.pushMoveToFoundationFromColumnEvent(data['columnIndex']);
         }
       },
-      builder: (context, candidateData, rejectedData) => (currentCard == null)
-          ? EmptyFoundation(
-              width: widget.width,
-              isLandscape: isLandscape,
-              cardFraction: isLandscape ? 8 : 9,
-            )
-          : CardWidget(
-              width: widget.width, isLandscape: isLandscape, card: currentCard),
+      builder: (context, candidateData, rejectedData) {
+        return (currentCard == null)
+            ? EmptyFoundation(
+                width: widget.width,
+                isLandscape: isLandscape,
+                cardFraction: isLandscape ? 8 : 9,
+              )
+            : Draggable<Map>(
+                childWhenDragging: Container(),
+                data: {
+                  'move_from_foundation': true,
+                  'suit': currentCard.fetcSuitString()
+                },
+                feedback: currentCardWidget,
+                child: currentCardWidget,
+              );
+      },
     );
     return Stack(
-      overflow: Overflow.clip,
       children: [
         Positioned(
           left: newLeftValue,
@@ -167,40 +187,17 @@ class _SuitFoundationState extends State<SuitFoundation>
             curve: Curves.fastOutSlowIn,
             top: top,
             left: left,
-            duration: Duration(milliseconds: 500),
-            child: (currentCard == null || manual || !changed)
+            duration: const Duration(milliseconds: 500),
+            child: !_needRotate()
                 ? dragTarget
                 : RotationTransition(
                     turns:
                         Tween(begin: 0.0, end: 1.0).animate(rotationController),
-                    child: dragTarget,
-                  )),
+                    child: Selector<Game, bool>(
+                        selector: (_ctx, game) => game.win,
+                        builder: (ctx, winState, child) =>
+                            winState ? currentCardWidget : dragTarget))),
       ],
     );
-  }
-}
-
-class EmptyFoundation extends StatelessWidget {
-  const EmptyFoundation(
-      {Key key,
-      @required this.width,
-      @required this.cardFraction,
-      @required this.isLandscape})
-      : super(key: key);
-
-  final double width;
-  final double cardFraction;
-  final bool isLandscape;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        width: width / cardFraction,
-        height: width / 7 * 1.15,
-        child: DottedBorder(
-          child: Container(),
-          borderType: BorderType.RRect,
-          radius: Radius.circular(isLandscape ? 10 : 8),
-        ));
   }
 }

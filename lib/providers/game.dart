@@ -26,10 +26,10 @@ class Game with ChangeNotifier {
   bool _win = false;
 
   Map<String, Map> _foundation = {
-    'club': null,
-    'diamond': null,
-    'spade': null,
-    'heart': null
+    'club': {},
+    'diamond': {},
+    'spade': {},
+    'heart': {}
   };
 
   List<List<CardModel>> get columns => _columns;
@@ -53,7 +53,7 @@ class Game with ChangeNotifier {
     setInitial(true);
     _updateWinState(false);
 
-    _channel.push(event: "start_new_game").receive("ok", (response) {
+    _channel.push(event: 'start_new_game').receive('ok', (response) {
       _setCardStateDeck(response);
       _setCardStateColumns(response);
       _setCardStateFoundation(response);
@@ -69,16 +69,16 @@ class Game with ChangeNotifier {
     await socket.connect();
 
     // Create a new PhoenixChannel
-    _channel = socket.channel("game");
+    _channel = socket.channel('game');
     // Setup listeners for channel events
-    _channel.on("update_game", _updateGameScreen);
-    _channel.on("win", (_payload, _ref, _joinRef) {
+    _channel.on('update_game', _updateGameScreen);
+    _channel.on('win', (_payload, _ref, _joinRef) {
       _updateWinState(true);
     });
 
     // Make the request to the server to join the channel
-    _channel.join().receive("ok", (responseFromServer) {
-      print("RECEIVED OK ON JOIN");
+    _channel.join().receive('ok', (responseFromServer) {
+      print('RECEIVED OK ON JOIN');
       _setCardStateColumns(responseFromServer);
       _setCardStateDeck(responseFromServer);
       _setCardStateFoundation(responseFromServer);
@@ -97,17 +97,17 @@ class Game with ChangeNotifier {
 
   void pushMoveFromColumnEvent(
       int fromColumn, int fromCardIndex, int toColumn) {
-    _channel.push(event: "move_from_column", payload: {
+    _channel.push(event: 'move_from_column', payload: {
       'from_column': fromColumn,
       'from_card_index': fromCardIndex,
       'to_column': toColumn
-    }).receive("ok", (responseFromServer) {
+    }).receive('ok', (responseFromServer) {
       print(responseFromServer);
       print('move_from_column response Ok');
 
       _setCardStateColumns(responseFromServer);
       _setCardStateDeck(responseFromServer);
-    }).receive("error", (responseFromServer) {
+    }).receive('error', (responseFromServer) {
       _setCardStateColumns(responseFromServer);
 
       print('Can not move card!');
@@ -116,19 +116,33 @@ class Game with ChangeNotifier {
 
   void pushMoveFromDeckEvent(int toColumn) {
     _channel.push(
-        event: "move_from_deck",
-        payload: {'to_column': toColumn}).receive("ok", (response) {
+        event: 'move_from_deck',
+        payload: {'to_column': toColumn}).receive('ok', (response) {
       print('move_from_deck response Ok');
 
       _setCardStateColumns(response);
       _setCardStateDeck(response);
-    }).receive("error", (response) {
+    }).receive('error', (response) {
       print('Can not move from deck card!');
     });
   }
 
+  void pushMoveFromFoundation(String suit, int toColumn) {
+    _channel.push(event: 'move_from_foundation', payload: {
+      'to_column': toColumn,
+      'suit': suit
+    }).receive('ok', (response) {
+      print('move_from_foundation response Ok');
+
+      _setCardStateColumns(response);
+      _setCardStateFoundation(response, true);
+    }).receive('error', (response) {
+      print('Can not move from foundation!');
+    });
+  }
+
   void pushChangeEvent() {
-    _channel.push(event: "change").receive("ok", (responseFromServer) {
+    _channel.push(event: 'change').receive('ok', (responseFromServer) {
       print('change response Ok');
 
       _setCardStateDeck(responseFromServer);
@@ -138,9 +152,9 @@ class Game with ChangeNotifier {
   }
 
   void pushMoveToFoundationFromColumnEvent(columnIndex) {
-    _channel.push(event: "move_to_foundation_from_column", payload: {
+    _channel.push(event: 'move_to_foundation_from_column', payload: {
       'from_column': columnIndex
-    }).receive("ok", (responseFromServer) {
+    }).receive('ok', (responseFromServer) {
       print('pushMoveToFoundationEvent response Ok');
 
       _setCardStateColumns(responseFromServer);
@@ -151,7 +165,7 @@ class Game with ChangeNotifier {
   }
 
   void pushMoveToFoundationFromDeckEvent() {
-    _channel.push(event: "move_to_foundation_from_deck").receive("ok",
+    _channel.push(event: 'move_to_foundation_from_deck').receive('ok',
         (responseFromServer) {
       print('pushMoveToFoundationEvent response Ok');
 
@@ -237,10 +251,11 @@ class Game with ChangeNotifier {
       final responseBySuit = response['foundation'][suit];
       int fromCardIndex;
       final fromResponseBySuit = responseBySuit['from'];
-      if (fromResponseBySuit != null && fromResponseBySuit[0] == "column") {
+      if (fromResponseBySuit != null && fromResponseBySuit[0] == 'column') {
         fromCardIndex =
             response['columns'][fromResponseBySuit[1]]['cards'].length + 1;
       }
+
       foundation[suit] = (responseBySuit['rank'] == null)
           ? {}
           : {
@@ -261,7 +276,7 @@ class Game with ChangeNotifier {
 
   void unsetChanged() {
     ['club', 'diamond', 'heart', 'spade'].forEach((element) {
-      foundation[element].addAll({"changed": false});
+      foundation[element].addAll({'changed': false});
     });
 
     notifyListeners();
