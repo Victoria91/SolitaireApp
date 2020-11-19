@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'package:solitaire_app/models/card_model.dart';
 import 'package:solitaire_app/providers/game.dart';
+import 'package:solitaire_app/services/position_calculation.dart';
 import 'package:solitaire_app/widgets/playing_card.dart';
 import './empty_foundation.dart';
 
@@ -10,6 +11,7 @@ import 'dart:async';
 
 class SuitFoundation extends StatefulWidget {
   final double width;
+  final double height;
   final CardSuit suit;
   final int position;
   final Map foundation;
@@ -21,6 +23,7 @@ class SuitFoundation extends StatefulWidget {
       @required this.width,
       @required this.foundation,
       @required this.suit,
+      @required this.height,
       @required this.position,
       @required this.gameInitial,
       @required this.isLandscape})
@@ -32,6 +35,7 @@ class SuitFoundation extends StatefulWidget {
       currentCard: foundation['rank'],
       width: width,
       position: position,
+      height: height,
       cardIndex: foundation['cardIndex'],
       from: foundation['from'],
       deckLength: foundation['deckLength'],
@@ -49,6 +53,7 @@ class _SuitFoundationState extends State<SuitFoundation>
   final CardModel currentCard;
   final CardModel prevCard;
   final double width;
+  final double height;
   final int position;
   final List from;
   final int deckLength;
@@ -77,14 +82,11 @@ class _SuitFoundationState extends State<SuitFoundation>
       @required this.manual,
       @required this.deckLength,
       @required this.prevCard,
+      @required this.height,
       @required this.isLandscape,
       @required this.gameInitial,
       @required this.cardIndex}) {
-    final cardFraction = isLandscape ? 8 : 9;
-    final ratio = isLandscape ? 3.40 : 3.7;
-    newLeftValue = width / cardFraction * ratio +
-        width / cardFraction * position +
-        10 * position;
+    newLeftValue = PositionCalculations.columnLeftPosition(width, position);
 
     if (!_needRotate() || from == null) {
       left = newLeftValue;
@@ -92,12 +94,15 @@ class _SuitFoundationState extends State<SuitFoundation>
       if (from[0] == 'deck') {
         // card was moved from deck, animate only left property
 
-        final cardOffset = isLandscape ? 20 : 15;
-        left = (width / cardFraction + deckLength * cardOffset).toDouble();
+        left = PositionCalculations.deckCardPostion(width, deckLength);
       } else {
         // card was moved from column, animate both left and top
-        left = from[1] * width / 7;
-        top = (120 + cardIndex * 20).toDouble();
+        left = PositionCalculations.columnLeftPosition(width, from[1]);
+        top = PositionCalculations.columnTopPosition(
+            totalHeight: height,
+            totalWidth: width,
+            isLandscape: isLandscape,
+            cardIndex: cardIndex);
       }
 
       _timer = Timer(Duration(microseconds: 500), () {
@@ -131,7 +136,7 @@ class _SuitFoundationState extends State<SuitFoundation>
   @override
   Widget build(BuildContext context) {
     if (_needRotate()) {
-      rotationController.forward(from: 0.0);
+      rotationController.forward();
     }
 
     final providerData = Provider.of<Game>(context, listen: false);

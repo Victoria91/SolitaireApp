@@ -12,22 +12,21 @@ class TitlePart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
     final color = card.isRed() ? Colors.red : Colors.black;
+    final totalWidth = MediaQuery.of(context).size.width;
 
     final textWidget = Text(card.rank,
         style: TextStyle(
-          fontSize: isLandscape ? 13 : 10,
+          fontSize: max(totalWidth / 50, 9),
           fontWeight: FontWeight.bold,
           color: color,
         ));
 
-    final iconWidget = Icon(card.icon(), size: 9, color: color);
+    final iconWidget = Icon(card.icon(), size: totalWidth / 70, color: color);
     return Transform.rotate(
       angle: position == 'top' ? 0 : pi,
       child: Container(
-        margin: EdgeInsets.only(top: 3, left: 3, right: 3),
+        margin: EdgeInsets.all((totalWidth / 180)),
         child: Align(
           alignment: Alignment.topLeft,
           child: Row(children: [

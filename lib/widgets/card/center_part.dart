@@ -8,12 +8,10 @@ class CenterPart extends StatelessWidget {
     Key key,
     @required this.card,
     @required this.constaints,
-    @required this.isLandscape,
   }) : super(key: key);
 
   final CardModel card;
   final BoxConstraints constaints;
-  final bool isLandscape;
 
   @override
   Widget build(BuildContext context) {
@@ -21,41 +19,35 @@ class CenterPart extends StatelessWidget {
 
     final icon = card.icon();
 
-    if (card.rank == 'A' || !isLandscape) {
+    if (card.rank == 'A' || constaints.maxHeight < 100) {
       return Column(children: [
         Icon(
           icon,
-          size: isLandscape ? 70 : 27,
+          size: constaints.maxHeight / 2,
           color: color,
         ),
       ]);
-    } else if (['J', 'D', 'K'].contains(card.rank) && isLandscape) {
+    } else if (['J', 'D', 'K'].contains(card.rank) &&
+        constaints.maxHeight > 100) {
       return Column(children: [
         Image(
             image: NetworkImage(
                 'https://bfa.github.io/solitaire-js/img/face-jack-spade.png'),
             width: constaints.maxWidth,
-            height: constaints.maxHeight / 1.6)
+            height: constaints.maxHeight / 1.8)
       ]);
     } else {
+      final iconWidget = Icon(
+        icon,
+        size: constaints.maxHeight / 5.2,
+        color: color,
+      );
       return Column(children: [
-        Icon(
-          icon,
-          size: 24,
-          color: color,
-        ),
-        Icon(
-          icon,
-          size: 24,
-          color: color,
-        ),
+        iconWidget,
+        iconWidget,
         Transform.rotate(
           angle: pi,
-          child: Icon(
-            icon,
-            size: 24,
-            color: color,
-          ),
+          child: iconWidget,
         )
       ]);
     }

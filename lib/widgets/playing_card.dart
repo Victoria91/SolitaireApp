@@ -79,12 +79,10 @@ class _PlayingCardState extends State<PlayingCard>
   @override
   void dispose() {
     _animationController.dispose();
-
-    super.dispose();
-
     if (_timer != null) {
       _timer.cancel();
     }
+    super.dispose();
   }
 
   @override
@@ -116,9 +114,7 @@ class _PlayingCardState extends State<PlayingCard>
         color: Colors.transparent,
         child: Container(
           width: width,
-          height: width / 7 * 1.15 +
-              widget.cardColumn.sublist(widget.cardIndex).length * 20 -
-              1,
+          height: mediaQuery.size.height,
           child: Stack(children: [
             CardColumn(
                 width: width,
@@ -158,15 +154,16 @@ class _PlayingCardState extends State<PlayingCard>
 }
 
 class CardWidget extends StatelessWidget {
-  const CardWidget({
-    @required this.card,
-    @required this.width,
-    @required this.isLandscape,
-  });
+  const CardWidget(
+      {@required this.card,
+      @required this.width,
+      @required this.isLandscape,
+      this.decorate = true});
 
   final CardModel card;
   final double width;
   final bool isLandscape;
+  final bool decorate;
 
   @override
   Widget build(BuildContext context) {
@@ -181,10 +178,7 @@ class CardWidget extends StatelessWidget {
                 builder: (BuildContext ctx, BoxConstraints constaints) {
                   return Column(children: [
                     TitlePart(card, 'top'),
-                    CenterPart(
-                        card: card,
-                        constaints: constaints,
-                        isLandscape: isLandscape),
+                    CenterPart(card: card, constaints: constaints),
                     TitlePart(card, 'down'),
                   ]);
                 },
@@ -192,16 +186,18 @@ class CardWidget extends StatelessWidget {
             : null,
         decoration: BoxDecoration(
           border: Border.all(),
-          boxShadow: <BoxShadow>[
-            const BoxShadow(
-              color: Colors.black54,
-              blurRadius: 15.0,
-              offset: Offset(0.0, 8),
-            )
-          ],
+          boxShadow: decorate
+              ? <BoxShadow>[
+                  const BoxShadow(
+                    color: Colors.black54,
+                    blurRadius: 15.0,
+                    offset: Offset(0.0, 8),
+                  )
+                ]
+              : null,
           color: card.played ? Colors.white : Colors.blue,
           borderRadius: BorderRadius.circular(
-            isLandscape ? 10 : 8,
+            max(width / (isLandscape ? 8 : 9) / 7, 8),
           ),
         ));
   }

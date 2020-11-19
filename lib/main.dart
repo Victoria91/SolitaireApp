@@ -2,15 +2,16 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:solitaire_app/widgets/confetti.dart';
 import 'package:solitaire_app/widgets/suit_foundation.dart';
 
 import 'widgets/card_column.dart';
 import 'widgets/playing_card.dart';
 import 'widgets/deck_widget.dart';
+import 'widgets/confetti.dart';
 
 import 'providers/game.dart';
 import 'models/card_model.dart';
+import 'constants.dart';
 
 void main() {
   runApp(
@@ -89,30 +90,60 @@ class _MyHomePageState extends State<MyHomePage> {
                           tileMode: TileMode.clamp)),
                   child: Padding(
                       padding: isLandscape
-                          ? EdgeInsets.symmetric(vertical: 28, horizontal: 10)
-                          : EdgeInsets.symmetric(vertical: 40, horizontal: 10),
+                          ? EdgeInsets.symmetric(
+                              vertical: 28,
+                              horizontal: horizontalTotalPadding.toDouble())
+                          : EdgeInsets.symmetric(
+                              vertical: 40,
+                              horizontal: horizontalTotalPadding.toDouble()),
                       child: Container(
                         height: mediaQuery.size.height,
                         child: Stack(
                           overflow: Overflow.visible,
                           children: [
                             Selector<Game, int>(
-                              selector: (ctx, game) => gameProvider.deckLength,
-                              builder: (context, deckLength, child) =>
-                                  deckLength > 0
-                                      ? InkWell(
-                                          onTap: gameProvider.pushChangeEvent,
-                                          child: CardWidget(
-                                            isLandscape: isLandscape,
-                                            card: CardModel(played: false),
-                                            width: mediaQuery.size.width,
-                                          ),
-                                        )
-                                      : Container(),
-                            ),
+                                selector: (ctx, game) =>
+                                    gameProvider.deckLength,
+                                builder: (context, deckLength, child) =>
+                                    deckLength > 0
+                                        ? Stack(
+                                            overflow: Overflow.visible,
+                                            children: [
+                                              if (deckLength > 1)
+                                                ...List.generate(deckLength - 1,
+                                                        (i) => i)
+                                                    .map((e) => Positioned(
+                                                        left:
+                                                            (e * 2).toDouble(),
+                                                        child: CardWidget(
+                                                          decorate: false,
+                                                          isLandscape:
+                                                              isLandscape,
+                                                          card: CardModel(
+                                                              played: false),
+                                                          width: mediaQuery
+                                                              .size.width,
+                                                        ))),
+                                              Positioned(
+                                                left: ((deckLength - 1) * 2)
+                                                    .toDouble(),
+                                                child: InkWell(
+                                                  focusColor: Colors.amber,
+                                                  onTap: gameProvider
+                                                      .pushChangeEvent,
+                                                  child: CardWidget(
+                                                    isLandscape: isLandscape,
+                                                    card: CardModel(
+                                                        played: false),
+                                                    width:
+                                                        mediaQuery.size.width,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : Container()),
                             Container(
-                              width: 180,
-                              height: 110,
                               child: Selector<Game, List>(
                                 selector: (ctx, game) => game.deck,
                                 builder: (ctx, game, child) {
@@ -136,28 +167,28 @@ class _MyHomePageState extends State<MyHomePage> {
                             buildFoundation(
                                 mediaQuery,
                                 'spade',
-                                0,
+                                3,
                                 gameProvider.deck.length,
                                 isLandscape,
                                 gameProvider.initial),
                             buildFoundation(
                                 mediaQuery,
                                 'club',
-                                1,
+                                4,
                                 gameProvider.deck.length,
                                 isLandscape,
                                 gameProvider.initial),
                             buildFoundation(
                                 mediaQuery,
                                 'diamond',
-                                2,
+                                5,
                                 gameProvider.deck.length,
                                 isLandscape,
                                 gameProvider.initial),
                             buildFoundation(
                                 mediaQuery,
                                 'heart',
-                                3,
+                                6,
                                 gameProvider.deck.length,
                                 isLandscape,
                                 gameProvider.initial),
@@ -185,6 +216,7 @@ class _MyHomePageState extends State<MyHomePage> {
         return foundation == null
             ? Container()
             : SuitFoundation(
+                height: mediaQuery.size.height,
                 isLandscape: isLandscape,
                 foundation: foundation,
                 width: mediaQuery.size.width,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:solitaire_app/services/position_calculation.dart';
 
 import '../models/card_model.dart';
 import 'playing_card.dart';
@@ -20,7 +21,6 @@ class DeckWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gameData = Provider.of<Game>(context, listen: false);
-    final offsetBetweenCards = isLandscape ? 20 : 15;
 
     return Stack(
         overflow: Overflow.visible,
@@ -32,10 +32,8 @@ class DeckWidget extends StatelessWidget {
           );
 
           return Positioned(
-              left: (mediaQuery.size.width / 8 +
-                      10 +
-                      card.key * offsetBetweenCards)
-                  .toDouble(),
+              left: PositionCalculations.deckCardPostion(
+                  mediaQuery.size.width, card.key),
               child: (card.key == deck.length - 1)
                   ? Draggable<Map>(
                       data: {'move_from_deck': true, 'card': deck.last},
@@ -49,7 +47,7 @@ class DeckWidget extends StatelessWidget {
                         if (gameData.activeColumnIndex != null &&
                             gameData.columns[gameData.activeColumnIndex]
                                 .isNotEmpty) {
-                          var canMoveRes = await gameData.canMove(
+                          final canMoveRes = await gameData.canMove(
                               gameData.columns[gameData.activeColumnIndex].last
                                   .toServer(),
                               deck.last.toServer());

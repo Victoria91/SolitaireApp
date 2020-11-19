@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:solitaire_app/services/position_calculation.dart';
 
 import 'dart:async';
 
@@ -43,15 +44,21 @@ class _CardColumnState extends State<CardColumn> {
 
   _CardColumnState(
       {this.dragging, this.width, this.gameInitial, this.columnIndex}) {
+    // since we can't use columns here because of animations, left property is calculated for each
+    // column.
+    final leftAfterAnimation =
+        PositionCalculations.columnLeftPosition(width, columnIndex);
+
     if (gameInitial) {
       _timer = Timer(Duration(microseconds: 1000), () {
         setState(() {
-          left = widget.columnIndex * width / 7;
+          left = leftAfterAnimation;
+
           Provider.of<Game>(context, listen: false).setInitial();
         });
       });
     } else if (!dragging) {
-      left = columnIndex * width / 7;
+      left = leftAfterAnimation;
     }
   }
 
@@ -72,7 +79,6 @@ class _CardColumnState extends State<CardColumn> {
     final width = mediaQuery.size.width;
 
     final providerData = Provider.of<Game>(context, listen: false);
-    final verticalOffset = widget.isLandscape ? 120 : 90;
 
     return AnimatedPositioned(
       duration: Duration(milliseconds: 1200 - widget.columnIndex * 200),
@@ -111,8 +117,17 @@ class _CardColumnState extends State<CardColumn> {
                       isLandscape: widget.isLandscape,
                       gameInitial: gameInitial,
                       top: widget.dragging
-                          ? (card.key * 18).toDouble()
-                          : (verticalOffset + card.key * 18).toDouble(),
+                          ? PositionCalculations.columnTopPosition(
+                                  totalHeight: height,
+                                  totalWidth: width,
+                                  cardIndex: card.key,
+                                  isLandscape: widget.isLandscape) -
+                              PositionCalculations.verticalOffset(width)
+                          : PositionCalculations.columnTopPosition(
+                              totalHeight: height,
+                              totalWidth: width,
+                              cardIndex: card.key,
+                              isLandscape: widget.isLandscape),
                       card: card.value,
                       cardColumn: widget.cards,
                       columnIndex: widget.columnIndex,
