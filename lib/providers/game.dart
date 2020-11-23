@@ -1,29 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:phoenix_wings/phoenix_wings.dart';
-
-import '../models/card_model.dart';
-
 import 'package:http/http.dart' as http;
 
-class Game with ChangeNotifier {
-  // static const host_path = '://192.168.0.13:4000';
-  // static const host_path = '://localhost:4000';
-  static const host_path = 's://solitaire.dbykov.com';
-  final socket = PhoenixSocket("ws$host_path/socket/websocket");
+import 'package:solitaire_app/services/token_storage.dart';
+import '../models/card_model.dart';
+import '../constants.dart';
 
-  // final socket = PhoenixSocket("ws://localhost:4000/socket/websocket");
+class Game with ChangeNotifier {
+  final socket = PhoenixSocket("ws$hostUrlPath/socket/websocket");
+
   PhoenixChannel _channel;
 
   List<List<CardModel>> _columns = [];
   List<CardModel> _deck = [];
   // if game has just started (needed for animation condition)
-  bool _initial = true;
+  bool _initial = false;
 
   int _deckLength = 0;
 
   int activeColumnIndex;
 
   bool _win = false;
+
+  String _deviceToken;
 
   Map<String, Map> _foundation = {
     'club': {},
@@ -68,8 +67,11 @@ class Game with ChangeNotifier {
   Future<void> fetchAndLoadGame() async {
     await socket.connect();
 
+    _deviceToken = await TokenStorage.getDeviceToken();
+    print('tokenn======= $_deviceToken');
+
     // Create a new PhoenixChannel
-    _channel = socket.channel('game');
+    _channel = socket.channel('game:$_deviceToken');
     // Setup listeners for channel events
     _channel.on('update_game', _updateGameScreen);
     _channel.on('win', (_payload, _ref, _joinRef) {
@@ -266,7 +268,8 @@ class Game with ChangeNotifier {
               'cardIndex': fromCardIndex,
               'deckLength': response['deck'].length,
               'manual': manual,
-              'changed': responseBySuit['rank'] != foundation[suit]['rank'],
+              'changed': responseBySuit['rank'] != foundation[suit]['rank'] &&
+                  foundation[suit].isNotEmpty,
               'rank': CardModel.initFromDeck(suit, responseBySuit['rank'])
             };
     });
@@ -294,7 +297,7 @@ class Game with ChangeNotifier {
     var client = http.Client();
     try {
       final response = await client.get(
-          'http$host_path/can_move?to_suit=${to[0]}&to_rank=${to[1]}&from_suit=${from[0]}&from_rank=${from[1]}');
+          'http$hostUrlPath/can_move?to_suit=${to[0]}&to_rank=${to[1]}&from_suit=${from[0]}&from_rank=${from[1]}');
 
       return response.body == 'true';
     } finally {

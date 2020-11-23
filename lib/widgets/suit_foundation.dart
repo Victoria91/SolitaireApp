@@ -104,14 +104,18 @@ class _SuitFoundationState extends State<SuitFoundation>
             isLandscape: isLandscape,
             cardIndex: cardIndex);
       }
-
-      _timer = Timer(Duration(microseconds: 500), () {
-        setState(() {
-          left = newLeftValue;
-          top = 0;
-          Provider.of<Game>(context, listen: false).unsetChanged();
+      if (changed) {
+        _timer = Timer(Duration(microseconds: 500), () {
+          setState(() {
+            left = newLeftValue;
+            top = 0;
+            Provider.of<Game>(context, listen: false).unsetChanged();
+          });
         });
-      });
+      } else {
+        left = newLeftValue;
+        top = 0;
+      }
     }
   }
 
