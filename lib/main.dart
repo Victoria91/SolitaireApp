@@ -105,7 +105,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                 selector: (ctx, game) =>
                                     gameProvider.deckLength,
                                 builder: (context, deckLength, child) =>
-                                    deckLength > 0
+                                    deckLength > 0 &&
+                                            !Provider.of<Game>(context,
+                                                    listen: false)
+                                                .win
                                         ? Stack(
                                             overflow: Overflow.visible,
                                             children: [
@@ -146,13 +149,13 @@ class _MyHomePageState extends State<MyHomePage> {
                             Container(
                               child: Selector<Game, List>(
                                 selector: (ctx, game) => game.deck,
-                                builder: (ctx, game, child) {
+                                builder: (ctx, deck, child) {
                                   print("BUILD DECK");
-                                  return game.isEmpty
+                                  return deck.isEmpty
                                       ? Container()
                                       : DeckWidget(
                                           isLandscape: isLandscape,
-                                          deck: game,
+                                          deck: deck,
                                           mediaQuery: mediaQuery);
                                 },
                               ),
