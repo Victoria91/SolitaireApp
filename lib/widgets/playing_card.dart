@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:solitaire_app/widgets/card/card_container.dart';
-import 'package:solitaire_app/widgets/card/center_part.dart';
 
 import 'dart:async';
 import 'dart:math';
 
 import '../models/card_model.dart';
 import 'card_column.dart';
-import 'card/title_part.dart';
+import '../widgets/card_widget.dart';
 import '../providers/game.dart';
 
 class PlayingCard extends StatefulWidget {
@@ -143,30 +141,4 @@ class _PlayingCardState extends State<PlayingCard>
           : cardwiget,
     );
   }
-}
-
-class CardWidget extends StatelessWidget {
-  const CardWidget({@required this.card, this.needShadow = true});
-
-  final CardModel card;
-  final bool needShadow;
-
-  @override
-  Widget build(BuildContext context) => CardContainer(
-        needShadow: needShadow,
-        played: card.played,
-        child: card.played
-            ? LayoutBuilder(
-                builder: (BuildContext ctx, BoxConstraints constaints) {
-                  return Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        TitlePart(card, 'top'),
-                        CenterPart(card: card, constaints: constaints),
-                        TitlePart(card, 'down'),
-                      ]);
-                },
-              )
-            : null,
-      );
 }

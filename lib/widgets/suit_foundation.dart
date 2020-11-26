@@ -4,7 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:solitaire_app/models/card_model.dart';
 import 'package:solitaire_app/providers/game.dart';
 import 'package:solitaire_app/services/position_calculation.dart';
-import 'package:solitaire_app/widgets/playing_card.dart';
+
+import 'card_widget.dart';
 import './empty_foundation.dart';
 
 import 'dart:async';

@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:solitaire_app/widgets/suit_foundation.dart';
 
 import 'widgets/card_column.dart';
-import 'widgets/playing_card.dart';
-import 'widgets/deck_widget.dart';
+import 'widgets/closed_deck.dart';
+import 'widgets/opened_deck.dart';
 import 'widgets/confetti.dart';
 
 import 'providers/game.dart';
@@ -23,7 +23,6 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -58,7 +57,6 @@ class _MyHomePageState extends State<MyHomePage> {
     Color gradientEnd = Colors.purple[500]; //Change end gradient color here
 
     final mediaQuery = MediaQuery.of(context);
-    final gameProvider = Provider.of<Game>(context, listen: false);
     final isLandscape = mediaQuery.orientation == Orientation.landscape;
 
     return Scaffold(
@@ -101,55 +99,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Stack(
                           overflow: Overflow.visible,
                           children: [
-                            Selector<Game, int>(
-                                selector: (ctx, game) =>
-                                    gameProvider.deckLength,
-                                builder: (context, deckLength, child) =>
-                                    deckLength > 0 &&
-                                            !Provider.of<Game>(context,
-                                                    listen: false)
-                                                .win
-                                        ? Stack(
-                                            overflow: Overflow.visible,
-                                            children: [
-                                              if (deckLength > 1)
-                                                ...List.generate(deckLength - 1,
-                                                        (i) => i)
-                                                    .map((e) => Positioned(
-                                                        left:
-                                                            (e * 2).toDouble(),
-                                                        child: CardWidget(
-                                                          needShadow: false,
-                                                          card: CardModel(
-                                                              played: false),
-                                                        ))),
-                                              Positioned(
-                                                left: ((deckLength - 1) * 2)
-                                                    .toDouble(),
-                                                child: InkWell(
-                                                  focusColor: Colors.amber,
-                                                  onTap: gameProvider
-                                                      .pushChangeEvent,
-                                                  child: CardWidget(
-                                                    card: CardModel(
-                                                        played: false),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          )
-                                        : Container()),
-                            Container(
-                              child: Selector<Game, List>(
-                                selector: (ctx, game) => game.deck,
-                                builder: (ctx, deck, child) {
-                                  print("BUILD DECK");
-                                  return deck.isEmpty
-                                      ? Container()
-                                      : DeckWidget(deck: deck);
-                                },
-                              ),
-                            ),
+                            ClosedDeck(),
+                            OpenedDeck(),
                             buildCardColumn(0, context),
                             buildCardColumn(1, context),
                             buildCardColumn(2, context),
@@ -157,34 +108,10 @@ class _MyHomePageState extends State<MyHomePage> {
                             buildCardColumn(4, context),
                             buildCardColumn(5, context),
                             buildCardColumn(6, context),
-                            buildFoundation(
-                                mediaQuery,
-                                'spade',
-                                3,
-                                gameProvider.deck.length,
-                                isLandscape,
-                                gameProvider.initial),
-                            buildFoundation(
-                                mediaQuery,
-                                'club',
-                                4,
-                                gameProvider.deck.length,
-                                isLandscape,
-                                gameProvider.initial),
-                            buildFoundation(
-                                mediaQuery,
-                                'diamond',
-                                5,
-                                gameProvider.deck.length,
-                                isLandscape,
-                                gameProvider.initial),
-                            buildFoundation(
-                                mediaQuery,
-                                'heart',
-                                6,
-                                gameProvider.deck.length,
-                                isLandscape,
-                                gameProvider.initial),
+                            buildFoundation('spade', 3, context),
+                            buildFoundation('club', 4, context),
+                            buildFoundation('diamond', 5, context),
+                            buildFoundation('heart', 6, context),
                             Selector<Game, bool>(
                               selector: (ctx, game) => game.win,
                               builder: (context, win, child) =>
@@ -199,35 +126,39 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Selector<Game, Map> buildFoundation(MediaQueryData mediaQuery, String suit,
-          int position, int deckLength, bool isLandscape, bool gameInitial) =>
-      Selector<Game, Map>(selector: (ctx, game) {
-        return (game.foundation[suit] != null) ? game.foundation[suit] : null;
-      }, builder: (ctx, foundation, child) {
-        print('rebuilding $suit......');
+  Selector<Game, Map> buildFoundation(
+      String suit, int position, BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    return Selector<Game, Map>(
+        selector: (_ctx, game) => game.foundation[suit],
+        builder: (_ctx, foundation, _child) {
+          print('rebuilding $suit......');
 
-        return foundation == null
-            ? Container()
-            : SuitFoundation(
-                height: mediaQuery.size.height,
-                isLandscape: isLandscape,
-                foundation: foundation,
-                width: mediaQuery.size.width,
-                suit: CardModel.fetchSuit(suit),
-                position: position,
-                gameInitial: gameInitial);
-      }, shouldRebuild: (previous, next) {
-        if (previous == null) {
-          return true;
-        }
-        return previous['rank'] != next['rank'];
-      });
+          return foundation == null
+              ? Container()
+              : SuitFoundation(
+                  height: mediaQuery.size.height,
+                  isLandscape: mediaQuery.orientation == Orientation.landscape,
+                  foundation: foundation,
+                  width: mediaQuery.size.width,
+                  suit: CardModel.fetchSuit(suit),
+                  position: position,
+                  gameInitial:
+                      Provider.of<Game>(context, listen: false).initial);
+        },
+        shouldRebuild: (previous, next) {
+          if (previous == null) {
+            return true;
+          }
+          return previous['rank'] != next['rank'];
+        });
+  }
 
   Selector<Game, List> buildCardColumn(int index, BuildContext context) {
     return Selector<Game, List>(
-      selector: (ctx, game) =>
+      selector: (_ctx, game) =>
           game.columns.isNotEmpty ? game.columns[index] : null,
-      builder: (ctx, columnsData, child) {
+      builder: (_ctx, columnsData, _child) {
         return columnsData == null
             ? Container()
             : CardColumn(
@@ -243,7 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
 Future<void> _showMyDialog(BuildContext context) async {
   return showDialog<void>(
     context: context,
-    builder: (BuildContext context) {
+    builder: (BuildContext _context) {
       return AlertDialog(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(20.0))),
