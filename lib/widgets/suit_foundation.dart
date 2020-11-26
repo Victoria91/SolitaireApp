@@ -145,8 +145,6 @@ class _SuitFoundationState extends State<SuitFoundation>
 
     final providerData = Provider.of<Game>(context, listen: false);
     final currentCardWidget = CardWidget(
-      width: widget.width,
-      isLandscape: isLandscape,
       card: currentCard,
     );
 
@@ -160,11 +158,7 @@ class _SuitFoundationState extends State<SuitFoundation>
       },
       builder: (context, candidateData, rejectedData) {
         return (currentCard == null)
-            ? EmptyFoundation(
-                width: widget.width,
-                isLandscape: isLandscape,
-                cardFraction: isLandscape ? 8 : 9,
-              )
+            ? EmptyFoundation()
             : Draggable<Map>(
                 childWhenDragging: Container(),
                 data: {
@@ -182,15 +176,9 @@ class _SuitFoundationState extends State<SuitFoundation>
           left: newLeftValue,
           child: prevCard != null
               ? CardWidget(
-                  width: width,
                   card: prevCard,
-                  isLandscape: isLandscape,
                 )
-              : EmptyFoundation(
-                  isLandscape: isLandscape,
-                  width: widget.width,
-                  cardFraction: isLandscape ? 8 : 9,
-                ),
+              : EmptyFoundation(),
         ),
         AnimatedPositioned(
             curve: Curves.fastOutSlowIn,

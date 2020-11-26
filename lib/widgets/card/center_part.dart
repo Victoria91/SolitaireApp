@@ -39,7 +39,7 @@ class CenterPart extends StatelessWidget {
     } else {
       final iconWidget = Icon(
         icon,
-        size: constaints.maxHeight / 5.2,
+        size: constaints.maxHeight / 5.3,
         color: color,
       );
       return Column(children: [

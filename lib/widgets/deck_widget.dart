@@ -7,27 +7,22 @@ import 'playing_card.dart';
 import '../providers/game.dart';
 
 class DeckWidget extends StatelessWidget {
-  const DeckWidget(
-      {Key key,
-      @required this.deck,
-      @required this.mediaQuery,
-      @required this.isLandscape})
-      : super(key: key);
+  const DeckWidget({
+    Key key,
+    @required this.deck,
+  }) : super(key: key);
 
   final List<CardModel> deck;
-  final MediaQueryData mediaQuery;
-  final bool isLandscape;
 
   @override
   Widget build(BuildContext context) {
     final gameData = Provider.of<Game>(context, listen: false);
+    final mediaQuery = MediaQuery.of(context);
 
     return Stack(
         overflow: Overflow.visible,
         children: deck.asMap().entries.map((card) {
           final cardWidget = CardWidget(
-            isLandscape: isLandscape,
-            width: mediaQuery.size.width,
             card: card.value,
           );
 

@@ -119,13 +119,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                                         left:
                                                             (e * 2).toDouble(),
                                                         child: CardWidget(
-                                                          decorate: false,
-                                                          isLandscape:
-                                                              isLandscape,
+                                                          needShadow: false,
                                                           card: CardModel(
                                                               played: false),
-                                                          width: mediaQuery
-                                                              .size.width,
                                                         ))),
                                               Positioned(
                                                 left: ((deckLength - 1) * 2)
@@ -135,11 +131,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                                   onTap: gameProvider
                                                       .pushChangeEvent,
                                                   child: CardWidget(
-                                                    isLandscape: isLandscape,
                                                     card: CardModel(
                                                         played: false),
-                                                    width:
-                                                        mediaQuery.size.width,
                                                   ),
                                                 ),
                                               ),
@@ -153,20 +146,17 @@ class _MyHomePageState extends State<MyHomePage> {
                                   print("BUILD DECK");
                                   return deck.isEmpty
                                       ? Container()
-                                      : DeckWidget(
-                                          isLandscape: isLandscape,
-                                          deck: deck,
-                                          mediaQuery: mediaQuery);
+                                      : DeckWidget(deck: deck);
                                 },
                               ),
                             ),
-                            buildCardColumn(0, isLandscape, context),
-                            buildCardColumn(1, isLandscape, context),
-                            buildCardColumn(2, isLandscape, context),
-                            buildCardColumn(3, isLandscape, context),
-                            buildCardColumn(4, isLandscape, context),
-                            buildCardColumn(5, isLandscape, context),
-                            buildCardColumn(6, isLandscape, context),
+                            buildCardColumn(0, context),
+                            buildCardColumn(1, context),
+                            buildCardColumn(2, context),
+                            buildCardColumn(3, context),
+                            buildCardColumn(4, context),
+                            buildCardColumn(5, context),
+                            buildCardColumn(6, context),
                             buildFoundation(
                                 mediaQuery,
                                 'spade',
@@ -233,8 +223,7 @@ class _MyHomePageState extends State<MyHomePage> {
         return previous['rank'] != next['rank'];
       });
 
-  Selector<Game, List> buildCardColumn(
-      int index, bool isLandscape, BuildContext context) {
+  Selector<Game, List> buildCardColumn(int index, BuildContext context) {
     return Selector<Game, List>(
       selector: (ctx, game) =>
           game.columns.isNotEmpty ? game.columns[index] : null,
@@ -243,7 +232,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ? Container()
             : CardColumn(
                 gameInitial: Provider.of<Game>(context, listen: false).initial,
-                isLandscape: isLandscape,
                 cards: columnsData,
                 columnIndex: index,
                 width: MediaQuery.of(context).size.width);

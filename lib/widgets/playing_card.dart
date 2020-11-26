@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:solitaire_app/widgets/card/card_container.dart';
 import 'package:solitaire_app/widgets/card/center_part.dart';
 
 import 'dart:async';
@@ -17,7 +18,6 @@ class PlayingCard extends StatefulWidget {
   final int cardIndex;
   final int columnIndex;
   final bool gameInitial;
-  final bool isLandscape;
 
   PlayingCard({
     @required this.top,
@@ -26,7 +26,6 @@ class PlayingCard extends StatefulWidget {
     @required this.cardColumn,
     @required this.cardIndex,
     @required this.columnIndex,
-    @required this.isLandscape,
   });
 
   @override
@@ -90,11 +89,7 @@ class _PlayingCardState extends State<PlayingCard>
     final mediaQuery = MediaQuery.of(context);
     final width = mediaQuery.size.width;
 
-    final cardwiget = CardWidget(
-      isLandscape: widget.isLandscape,
-      width: width,
-      card: widget.card,
-    );
+    final cardwiget = CardWidget(card: widget.card);
 
     final gameData = Provider.of<Game>(context, listen: false);
 
@@ -119,7 +114,6 @@ class _PlayingCardState extends State<PlayingCard>
             CardColumn(
                 width: width,
                 gameInitial: gameData.initial,
-                isLandscape: widget.isLandscape,
                 dragging: true,
                 cards: widget.cardColumn.sublist(widget.cardIndex),
                 columnIndex: widget.columnIndex),
@@ -142,8 +136,6 @@ class _PlayingCardState extends State<PlayingCard>
                   child: animationFinished
                       ? draggableCard
                       : CardWidget(
-                          width: width,
-                          isLandscape: widget.isLandscape,
                           card: CardModel(played: false),
                         ),
                 )
@@ -154,51 +146,27 @@ class _PlayingCardState extends State<PlayingCard>
 }
 
 class CardWidget extends StatelessWidget {
-  const CardWidget(
-      {@required this.card,
-      @required this.width,
-      @required this.isLandscape,
-      this.decorate = true});
+  const CardWidget({@required this.card, this.needShadow = true});
 
   final CardModel card;
-  final double width;
-  final bool isLandscape;
-  final bool decorate;
+  final bool needShadow;
 
   @override
-  Widget build(BuildContext context) {
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
-
-    return Container(
-        width: width / (isLandscape ? 8 : 9),
-        height: width / 7 * 1.2,
+  Widget build(BuildContext context) => CardContainer(
+        needShadow: needShadow,
+        played: card.played,
         child: card.played
             ? LayoutBuilder(
                 builder: (BuildContext ctx, BoxConstraints constaints) {
-                  return Column(children: [
-                    TitlePart(card, 'top'),
-                    CenterPart(card: card, constaints: constaints),
-                    TitlePart(card, 'down'),
-                  ]);
+                  return Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TitlePart(card, 'top'),
+                        CenterPart(card: card, constaints: constaints),
+                        TitlePart(card, 'down'),
+                      ]);
                 },
               )
             : null,
-        decoration: BoxDecoration(
-          border: Border.all(),
-          boxShadow: decorate
-              ? <BoxShadow>[
-                  const BoxShadow(
-                    color: Colors.black54,
-                    blurRadius: 15.0,
-                    offset: Offset(0.0, 8),
-                  )
-                ]
-              : null,
-          color: card.played ? Colors.white : Colors.blue,
-          borderRadius: BorderRadius.circular(
-            max(width / (isLandscape ? 8 : 9) / 7, 8),
-          ),
-        ));
-  }
+      );
 }

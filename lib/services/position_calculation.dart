@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import '../constants.dart';
 
 class PositionCalculations {
@@ -13,6 +15,10 @@ class PositionCalculations {
       double totalWidth}) {
     return verticalOffset(totalWidth) +
         cardIndex * totalHeight / verticalOffsetBetweenCards(isLandscape);
+  }
+
+  static double cardBorderRadius(bool isLandscape, double width) {
+    return max(width / (isLandscape ? 8 : 9) / 7, 8);
   }
 
   static double deckCardPostion(double totalWidth, int deckCardIndex) {

@@ -13,14 +13,12 @@ class CardColumn extends StatefulWidget {
   final int columnIndex;
   final bool dragging;
   final double width;
-  final bool isLandscape;
   final bool gameInitial;
 
   CardColumn(
       {Key key,
       @required this.cards,
       @required this.columnIndex,
-      @required this.isLandscape,
       @required this.gameInitial,
       @required this.width,
       this.dragging = false})
@@ -109,31 +107,30 @@ class _CardColumnState extends State<CardColumn> {
           },
           builder: (ctx, _candidateData, _rejectedData) => Stack(
             overflow: Overflow.visible,
-            children: widget.cards
-                .asMap()
-                .entries
-                .map(
-                  (card) => PlayingCard(
-                      isLandscape: widget.isLandscape,
-                      gameInitial: gameInitial,
-                      top: widget.dragging
-                          ? PositionCalculations.columnTopPosition(
-                                  totalHeight: height,
-                                  totalWidth: width,
-                                  cardIndex: card.key,
-                                  isLandscape: widget.isLandscape) -
-                              PositionCalculations.verticalOffset(width)
-                          : PositionCalculations.columnTopPosition(
-                              totalHeight: height,
-                              totalWidth: width,
-                              cardIndex: card.key,
-                              isLandscape: widget.isLandscape),
-                      card: card.value,
-                      cardColumn: widget.cards,
-                      columnIndex: widget.columnIndex,
-                      cardIndex: card.key),
-                )
-                .toList(),
+            children: widget.cards.asMap().entries.map(
+              (card) {
+                final isLandscape =
+                    mediaQuery.orientation == Orientation.landscape;
+                return PlayingCard(
+                    gameInitial: gameInitial,
+                    top: widget.dragging
+                        ? PositionCalculations.columnTopPosition(
+                                totalHeight: height,
+                                totalWidth: width,
+                                cardIndex: card.key,
+                                isLandscape: isLandscape) -
+                            PositionCalculations.verticalOffset(width)
+                        : PositionCalculations.columnTopPosition(
+                            totalHeight: height,
+                            totalWidth: width,
+                            cardIndex: card.key,
+                            isLandscape: isLandscape),
+                    card: card.value,
+                    cardColumn: widget.cards,
+                    columnIndex: widget.columnIndex,
+                    cardIndex: card.key);
+              },
+            ).toList(),
           ),
         ),
       ),
