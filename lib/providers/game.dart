@@ -153,6 +153,17 @@ class Game with ChangeNotifier {
     });
   }
 
+  void pushCancelMoveEvent() {
+    _channel.push(event: 'cancel_move').receive('ok', (responseFromServer) {
+      print('cancel_move response Ok');
+
+      _setCardStateDeck(responseFromServer);
+      _setCardStateColumns(responseFromServer);
+      _setCardStateFoundation(responseFromServer);
+      unsetActiveColumnIndex();
+    });
+  }
+
   void pushMoveToFoundationFromColumnEvent(columnIndex) {
     _channel.push(event: 'move_to_foundation_from_column', payload: {
       'from_column': columnIndex

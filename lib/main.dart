@@ -8,6 +8,7 @@ import 'widgets/card_column.dart';
 import 'widgets/closed_deck.dart';
 import 'widgets/opened_deck.dart';
 import 'widgets/confetti.dart';
+import 'widgets/floating_action_button_container.dart';
 
 import 'providers/game.dart';
 import 'models/card_model.dart';
@@ -62,14 +63,22 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       floatingActionButtonLocation:
           FloatingActionButtonLocation.miniCenterDocked,
-      floatingActionButton: Container(
-        width: 30,
-        child: FloatingActionButton(
-          child: Icon(Icons.add_outlined),
-          onPressed: () {
-            _showMyDialog(context);
-          },
-        ),
+      floatingActionButton: Stack(
+        children: <Widget>[
+          FloatingActionButtorContainer(
+              icon: Icons.add_outlined,
+              position: 'left',
+              onPressedCallback: () {
+                _showMyDialog(context);
+              }),
+          FloatingActionButtorContainer(
+            icon: Icons.arrow_back,
+            position: 'right',
+            onPressedCallback: () {
+              Provider.of<Game>(context, listen: false).pushCancelMoveEvent();
+            },
+          )
+        ],
       ),
       backgroundColor: Colors.purple,
       body: FutureBuilder(
