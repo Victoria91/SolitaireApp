@@ -1,4 +1,4 @@
-const offsetBetweenColumns = 5;
+const offsetBetweenColumns = 4;
 const horizontalTotalPadding = 10;
 const hostUrlPath = 's://solitaire.dbykov.com';
 // const hostUrlPath = '://192.168.0.13:4000';
