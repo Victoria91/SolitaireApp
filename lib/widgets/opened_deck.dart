@@ -26,8 +26,16 @@ class OpenedDeck extends StatelessWidget {
                 );
 
                 return Positioned(
-                    left: PositionCalculations.deckCardPostion(
-                        MediaQuery.of(context).size.width, card.key),
+                    left: gameData.suitCount == 3
+                        ? PositionCalculations.deckCardPostion(
+                            MediaQuery.of(context).size.width,
+                            gameData.columns.length,
+                            card.key)
+                        : PositionCalculations.columnLeftPosition(
+                                MediaQuery.of(context).size.width,
+                                gameData.columns.length,
+                                2) -
+                            15,
                     child: (card.key == deck.length - 1)
                         ? Draggable<Map>(
                             data: {'move_from_deck': true, 'card': deck.last},

@@ -6,13 +6,17 @@ import '../models/card_model.dart';
 import '../providers/game.dart';
 
 class ClosedDeck extends StatelessWidget {
+  final String gameType;
   const ClosedDeck({
     Key key,
+    @required this.gameType,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final gameProvider = Provider.of<Game>(context, listen: false);
+
+    final offsetBetweenCards = gameType == 'klondike' ? 2 : 8;
 
     return Selector<Game, int>(
         selector: (ctx, game) => gameProvider.deckLength,
@@ -23,16 +27,18 @@ class ClosedDeck extends StatelessWidget {
                   if (deckLength > 1)
                     ...List.generate(deckLength - 1, (i) => i)
                         .map((e) => Positioned(
-                            left: (e * 2).toDouble(),
+                            left: (e * offsetBetweenCards).toDouble(),
                             child: CardWidget(
-                              needShadow: false,
+                              needShadow: gameType == 'spider',
                               card: CardModel(played: false),
                             ))),
                   Positioned(
-                    left: ((deckLength - 1) * 2).toDouble(),
+                    left: ((deckLength - 1) * offsetBetweenCards).toDouble(),
                     child: InkWell(
                       focusColor: Colors.amber,
-                      onTap: gameProvider.pushChangeEvent,
+                      onTap: gameType == 'spider'
+                          ? gameProvider.pushMoveFromDeckEventSpider
+                          : gameProvider.pushChangeEvent,
                       child: CardWidget(
                         card: CardModel(played: false),
                       ),

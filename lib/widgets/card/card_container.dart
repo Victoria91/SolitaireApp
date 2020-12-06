@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:solitaire_app/providers/game.dart';
 
 import 'package:solitaire_app/services/position_calculation.dart';
 
@@ -23,9 +25,13 @@ class CardContainer extends StatelessWidget {
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
+    final cardColumnsCount =
+        Provider.of<Game>(context, listen: false).columns.length;
+
     return Container(
-        width: width / (isLandscape ? 8 : 9),
-        height: width / 7 * (isLandscape ? 1.2 : 1.15),
+        width:
+            width / (isLandscape ? cardColumnsCount + 1 : cardColumnsCount + 2),
+        height: PositionCalculations.cardHeight(width, cardColumnsCount),
         child: child,
         decoration: BoxDecoration(
           border: needBorder ? Border.all() : null,
@@ -39,7 +45,7 @@ class CardContainer extends StatelessWidget {
                 ]
               : null,
           color: played
-              ? Colors.white
+              ? Color.fromRGBO(255, 233, 236, 1)
               : transparent
                   ? Colors.transparent
                   : Colors.blue,

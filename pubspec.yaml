@@ -79,6 +79,20 @@ flutter:
   #         weight: 700
   #
 
+  assets:
+    - assets/images/J-diamond.png
+    - assets/images/J-spade.png
+    - assets/images/J-heart.png
+    - assets/images/J-club.png
+    - assets/images/D-club.png
+    - assets/images/D-diamond.png
+    - assets/images/D-spade.png
+    - assets/images/D-heart.png
+    - assets/images/K-spade.png
+    - assets/images/K-diamond.png
+    - assets/images/K-club.png
+    - assets/images/K-heart.png
+
   fonts:
     - family:  Heart
       fonts:

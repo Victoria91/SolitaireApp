@@ -22,47 +22,39 @@ class Game with ChangeNotifier {
 
   bool _win = false;
 
+  bool _newCardSet = false;
+
+  String _type;
+
   String _deviceToken;
 
-  Map<String, Map> _foundation = {
+  int _suitCount;
+
+  Map<String, dynamic> _foundation = {
     'club': {},
     'diamond': {},
     'spade': {},
-    'heart': {}
+    'heart': {},
+    'sorted': []
   };
 
   List<List<CardModel>> get columns => _columns;
 
-  Map<String, Map> get foundation => _foundation;
+  Map<String, dynamic> get foundation => _foundation;
 
   List<CardModel> get deck => _deck;
 
   int get deckLength => _deckLength;
 
+  int get suitCount => _suitCount;
+
   bool get initial => _initial;
 
   bool get win => _win;
 
-  void setActiveColumnIndex(int index) {
-    activeColumnIndex = index;
-    notifyListeners();
-  }
+  bool get newCardSet => _newCardSet;
 
-  void startNewGame() {
-    setInitial(true);
-    _updateWinState(false);
-
-    _channel.push(event: 'start_new_game').receive('ok', (response) {
-      _setCardStateDeck(response);
-      _setCardStateColumns(response);
-      _setCardStateFoundation(response);
-    });
-  }
-
-  void unsetActiveColumnIndex() {
-    activeColumnIndex = null;
-    notifyListeners();
-  }
+  String get type => _type;
 
   Future<void> fetchAndLoadGame() async {
     await socket.connect();
@@ -81,10 +73,54 @@ class Game with ChangeNotifier {
     // Make the request to the server to join the channel
     _channel.join().receive('ok', (responseFromServer) {
       print('RECEIVED OK ON JOIN');
+
+      _setSuitCount(responseFromServer);
       _setCardStateColumns(responseFromServer);
       _setCardStateDeck(responseFromServer);
       _setCardStateFoundation(responseFromServer);
+      _setGameType(responseFromServer);
     });
+  }
+
+  void setActiveColumnIndex(int index) {
+    activeColumnIndex = index;
+    notifyListeners();
+  }
+
+  void _setSuitCount(responseFromServer) {
+    _suitCount = responseFromServer['suit_count'];
+    notifyListeners();
+  }
+
+  void startNewGame([String gameType, int count]) {
+    setInitial(true);
+    _updateWinState(false);
+
+    gameType = gameType ?? type;
+    count = count ?? suitCount;
+
+    _columns = [];
+
+    _channel.push(event: 'start_new_game', payload: {
+      'type': gameType,
+      'suit_count': count
+    }).receive('ok', (response) {
+      _setSuitCount(response);
+      _setCardStateDeck(response);
+      _setCardStateColumns(response);
+      _setCardStateFoundation(response);
+      _setGameType(response);
+    });
+  }
+
+  void _setGameType(Map response) {
+    _type = response['type'];
+    notifyListeners();
+  }
+
+  void unsetActiveColumnIndex() {
+    activeColumnIndex = null;
+    notifyListeners();
   }
 
   void _updateWinState(bool newWin) {
@@ -127,6 +163,25 @@ class Game with ChangeNotifier {
     }).receive('error', (response) {
       print('Can not move from deck card!');
     });
+  }
+
+  void pushMoveFromDeckEventSpider() {
+    _channel.push(event: 'move_from_deck').receive('ok', (response) {
+      print('move_from_deck response Ok');
+
+      _setCardStateColumns(response);
+      _setCardStateDeck(response);
+
+      _newCardSet = true;
+      notifyListeners();
+    }).receive('error', (response) {
+      print('Can not move from deck card!');
+    });
+  }
+
+  void unsetNewCardSet() {
+    _newCardSet = false;
+    notifyListeners();
   }
 
   void pushMoveFromFoundation(String suit, int toColumn) {
@@ -200,6 +255,7 @@ class Game with ChangeNotifier {
         newCard: false,
         suit: lastCard.suit,
         rank: lastCard.rank,
+        moveable: lastCard.moveable,
         played: lastCard.played);
   }
 
@@ -243,9 +299,11 @@ class Game with ChangeNotifier {
                 card.value[1].toString(),
                 res.value['cards'].length - card.key,
                 res.value['unplayed'],
+                res.value['cards'].length,
+                res.value['moveable'],
                 card.key == 0 &&
                     _columns.isNotEmpty &&
-                    cardHadTurnedOver(res.value['cards'], _columns[res.key])))
+                    _cardHadTurnedOver(res.value['cards'], _columns[res.key])))
             .toList()
             .cast<CardModel>())
         .toList()
@@ -254,7 +312,7 @@ class Game with ChangeNotifier {
     notifyListeners();
   }
 
-  bool cardHadTurnedOver(currentCardColumn, previousCardColumn) {
+  bool _cardHadTurnedOver(currentCardColumn, previousCardColumn) {
     return previousCardColumn.length == currentCardColumn.length &&
         previousCardColumn.last.played == false;
   }
@@ -269,9 +327,10 @@ class Game with ChangeNotifier {
             response['columns'][fromResponseBySuit[1]]['cards'].length + 1;
       }
 
-      foundation[suit] = (responseBySuit['rank'] == null)
+      _foundation[suit] = (responseBySuit['rank'] == null)
           ? {}
           : {
+              'count': responseBySuit['count'],
               'prev': responseBySuit['prev'] == null
                   ? null
                   : CardModel.initFromDeck(suit, responseBySuit['prev']),
@@ -279,12 +338,13 @@ class Game with ChangeNotifier {
               'cardIndex': fromCardIndex,
               'deckLength': response['deck'].length,
               'manual': manual,
-              'changed': responseBySuit['rank'] != foundation[suit]['rank'] &&
-                  foundation[suit].isNotEmpty,
+              'changed':
+                  foundation[suit].isNotEmpty && responseBySuit['rank'] != null,
               'rank': CardModel.initFromDeck(suit, responseBySuit['rank'])
             };
     });
 
+    _foundation['sorted'] = response['foundation']['sorted'];
     notifyListeners();
   }
 
@@ -292,7 +352,6 @@ class Game with ChangeNotifier {
     ['club', 'diamond', 'heart', 'spade'].forEach((element) {
       foundation[element].addAll({'changed': false});
     });
-
     notifyListeners();
   }
 

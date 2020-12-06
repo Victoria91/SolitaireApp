@@ -23,23 +23,20 @@ class CenterPart extends StatelessWidget {
       return Column(children: [
         Icon(
           icon,
-          size: constraints.maxHeight / 2.1,
+          size: constraints.maxHeight / 2.5,
           color: color,
         ),
       ]);
     } else if (['J', 'D', 'K'].contains(card.rank) &&
         constraints.maxHeight > 100) {
       return Column(children: [
-        Image(
-            image: NetworkImage(
-                'https://bfa.github.io/solitaire-js/img/face-jack-spade.png'),
-            width: constraints.maxWidth,
-            height: constraints.maxHeight / 1.8)
+        Image.asset('assets/images/${card.rank}-${card.fetcSuitString()}.png',
+            width: constraints.maxWidth, height: constraints.maxHeight / 1.9)
       ]);
     } else {
       final iconWidget = Icon(
         icon,
-        size: constraints.maxHeight / 5.3,
+        size: constraints.maxHeight / 6,
         color: color,
       );
       return Column(children: [

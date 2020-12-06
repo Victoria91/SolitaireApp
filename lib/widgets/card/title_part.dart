@@ -16,9 +16,10 @@ class TitlePart extends StatelessWidget {
     final totalWidth = MediaQuery.of(context).size.width;
 
     final textWidget = Material(
+        color: Color.fromRGBO(255, 233, 236, 1),
         child: Text(card.rank,
             style: TextStyle(
-              fontSize: max(totalWidth / 50, 9),
+              fontSize: max(totalWidth / 60, 9),
               fontWeight: FontWeight.bold,
               color: color,
             )));

@@ -17,22 +17,27 @@ class SuitFoundation extends StatefulWidget {
   final int position;
   final Map foundation;
   final bool isLandscape;
+  final bool changed;
   final bool gameInitial;
+  final int columnsCount;
 
-  SuitFoundation(
-      {Key key,
-      @required this.width,
-      @required this.foundation,
-      @required this.suit,
-      @required this.height,
-      @required this.position,
-      @required this.gameInitial,
-      @required this.isLandscape})
-      : super(key: key ?? ValueKey([foundation]));
+  SuitFoundation({
+    Key key,
+    @required this.width,
+    @required this.foundation,
+    @required this.columnsCount,
+    @required this.height,
+    @required this.position,
+    @required this.gameInitial,
+    @required this.isLandscape,
+    this.suit,
+    this.changed,
+  }) : super(key: key ?? ObjectKey([foundation, position]));
 
   @override
   _SuitFoundationState createState() => _SuitFoundationState(
       isLandscape: isLandscape,
+      columnsCount: columnsCount,
       currentCard: foundation['rank'],
       width: width,
       position: position,
@@ -40,7 +45,7 @@ class SuitFoundation extends StatefulWidget {
       cardIndex: foundation['cardIndex'],
       from: foundation['from'],
       deckLength: foundation['deckLength'],
-      changed: foundation['changed'],
+      changed: changed != null ? changed : foundation['changed'],
       manual: foundation['manual'],
       gameInitial: gameInitial,
       prevCard: foundation['prev']);
@@ -59,6 +64,7 @@ class _SuitFoundationState extends State<SuitFoundation>
   final List from;
   final int deckLength;
   final int cardIndex;
+  final int columnsCount;
   final bool isLandscape;
   final bool manual;
   final bool gameInitial;
@@ -80,6 +86,7 @@ class _SuitFoundationState extends State<SuitFoundation>
       @required this.width,
       @required this.position,
       @required this.from,
+      @required this.columnsCount,
       @required this.manual,
       @required this.deckLength,
       @required this.prevCard,
@@ -87,7 +94,8 @@ class _SuitFoundationState extends State<SuitFoundation>
       @required this.isLandscape,
       @required this.gameInitial,
       @required this.cardIndex}) {
-    newLeftValue = PositionCalculations.columnLeftPosition(width, position);
+    newLeftValue =
+        PositionCalculations.columnLeftPosition(width, columnsCount, position);
 
     if (!_needRotate() || from == null) {
       left = newLeftValue;
@@ -95,14 +103,17 @@ class _SuitFoundationState extends State<SuitFoundation>
       if (from[0] == 'deck') {
         // card was moved from deck, animate only left property
 
-        left = PositionCalculations.deckCardPostion(width, deckLength);
+        left = PositionCalculations.deckCardPostion(
+            width, columnsCount, deckLength);
       } else {
         // card was moved from column, animate both left and top
-        left = PositionCalculations.columnLeftPosition(width, from[1]);
+        left = PositionCalculations.columnLeftPosition(
+            width, columnsCount, from[1]);
         top = PositionCalculations.columnTopPosition(
             totalHeight: height,
             totalWidth: width,
             isLandscape: isLandscape,
+            columnsCount: columnsCount,
             cardIndex: cardIndex);
       }
       if (changed) {
@@ -145,9 +156,14 @@ class _SuitFoundationState extends State<SuitFoundation>
     }
 
     final providerData = Provider.of<Game>(context, listen: false);
+
     final currentCardWidget = CardWidget(
       card: currentCard,
     );
+
+    final emptyFoundationWidget = providerData.type == 'spider'
+        ? EmptyFoundation()
+        : EmptyFoundation(card: CardModel(played: false, suit: widget.suit));
 
     final dragTarget = DragTarget<Map>(
       onAccept: (data) {
@@ -159,28 +175,30 @@ class _SuitFoundationState extends State<SuitFoundation>
       },
       builder: (context, candidateData, rejectedData) {
         return (currentCard == null)
-            ? EmptyFoundation()
-            : Draggable<Map>(
-                childWhenDragging: Container(),
-                data: {
-                  'move_from_foundation': true,
-                  'suit': currentCard.fetcSuitString()
-                },
-                feedback: currentCardWidget,
-                child: currentCardWidget,
-              );
+            ? emptyFoundationWidget
+            : providerData.type == 'spider'
+                ? currentCardWidget
+                : Draggable<Map>(
+                    childWhenDragging: Container(),
+                    data: {
+                      'move_from_foundation': true,
+                      'suit': currentCard.fetcSuitString()
+                    },
+                    feedback: currentCardWidget,
+                    child: currentCardWidget,
+                  );
       },
     );
     return Stack(
       children: [
         Positioned(
-          left: newLeftValue,
-          child: prevCard != null
-              ? CardWidget(
-                  card: prevCard,
-                )
-              : EmptyFoundation(),
-        ),
+            left: newLeftValue,
+            child: prevCard != null
+                ? CardWidget(
+                    card: prevCard,
+                    needShadow: false,
+                  )
+                : emptyFoundationWidget),
         AnimatedPositioned(
             curve: Curves.fastOutSlowIn,
             top: top,
@@ -194,7 +212,9 @@ class _SuitFoundationState extends State<SuitFoundation>
                     child: Selector<Game, bool>(
                         selector: (_ctx, game) => game.win,
                         builder: (ctx, winState, child) =>
-                            winState ? currentCardWidget : dragTarget))),
+                            winState || providerData.type == 'spider'
+                                ? currentCardWidget
+                                : dragTarget))),
       ],
     );
   }

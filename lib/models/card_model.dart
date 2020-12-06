@@ -31,22 +31,30 @@ class CardModel {
   final CardSuit suit;
   final String rank;
   final bool played;
+  final bool moveable;
   bool newCard;
 
-  CardModel({@required this.played, this.rank, this.suit, this.newCard});
+  CardModel(
+      {@required this.played,
+      this.rank,
+      this.moveable,
+      this.suit,
+      this.newCard});
 
-  CardModel.initFormServer(
-      String suitString, String rankString, int index, int unplayed,
+  CardModel.initFormServer(String suitString, String rankString, int index,
+      int unplayed, int length, int moveableCount,
       [newCard = false])
       : rank = rankString,
         suit = fetchSuit(suitString),
         newCard = newCard,
+        moveable = (length - index + 1) <= moveableCount,
         played = index > unplayed;
 
   CardModel.initFromDeck(String suitString, String rankString)
       : rank = rankString,
         suit = fetchSuit(suitString),
         newCard = false,
+        moveable = true,
         played = true;
 
   List<String> toServer() {
@@ -55,14 +63,15 @@ class CardModel {
 
   @override
   String toString() {
-    return '$rank -- $suit -- $newCard';
+    return '$rank -- $suit -- $newCard -- moveable: $moveable \n';
   }
 
   @override
   bool operator ==(other) {
     return this.rank == other.rank &&
         this.suit == other.suit &&
-        this.played == other.played;
+        this.played == other.played &&
+        this.moveable == other.moveable;
   }
 
   @override

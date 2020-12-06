@@ -11,9 +11,11 @@ import '../widgets/playing_card.dart';
 class CardColumn extends StatefulWidget {
   final List<CardModel> cards;
   final int columnIndex;
+  final int columnCount;
   final bool dragging;
   final double width;
   final bool gameInitial;
+  final String gameType;
 
   CardColumn(
       {Key key,
@@ -21,14 +23,18 @@ class CardColumn extends StatefulWidget {
       @required this.columnIndex,
       @required this.gameInitial,
       @required this.width,
+      @required this.columnCount,
+      @required this.gameType,
       this.dragging = false})
       : super(key: key ?? ObjectKey([cards]));
 
   @override
   _CardColumnState createState() => _CardColumnState(
+      columnCount: columnCount,
       dragging: dragging,
       width: width,
       gameInitial: gameInitial,
+      gameType: gameType,
       columnIndex: columnIndex);
 }
 
@@ -39,13 +45,20 @@ class _CardColumnState extends State<CardColumn> {
   final double width;
   final int columnIndex;
   final bool gameInitial;
+  final String gameType;
+  final int columnCount;
 
   _CardColumnState(
-      {this.dragging, this.width, this.gameInitial, this.columnIndex}) {
+      {@required this.dragging,
+      @required this.width,
+      @required this.columnCount,
+      @required this.gameInitial,
+      @required this.columnIndex,
+      @required this.gameType}) {
     // since we can't use columns here because of animations, left property is calculated for each
     // column.
-    final leftAfterAnimation =
-        PositionCalculations.columnLeftPosition(width, columnIndex);
+    final leftAfterAnimation = PositionCalculations.columnLeftPosition(
+        width, columnCount, columnIndex);
 
     if (gameInitial) {
       _timer = Timer(Duration(microseconds: 1000), () {
@@ -79,11 +92,11 @@ class _CardColumnState extends State<CardColumn> {
     final providerData = Provider.of<Game>(context, listen: false);
 
     return AnimatedPositioned(
-      duration: Duration(milliseconds: 1200 - widget.columnIndex * 200),
+      duration: Duration(milliseconds: 2200 - widget.columnIndex * 200),
       left: left,
       child: Container(
         width: width / 8,
-        height: height,
+        height: height + 500,
         child: DragTarget<Map>(
           onAccept: (data) {
             if (data['move_from_deck'] == true) {
@@ -112,19 +125,30 @@ class _CardColumnState extends State<CardColumn> {
                 final isLandscape =
                     mediaQuery.orientation == Orientation.landscape;
                 return PlayingCard(
+                    last: card.key == widget.cards.length - 1,
+                    width: width,
+                    dragging: dragging,
                     gameInitial: gameInitial,
-                    top: widget.dragging
-                        ? PositionCalculations.columnTopPosition(
+                    newCardSet: providerData.newCardSet,
+                    columnCount: providerData.columns.length,
+                    top: 10 +
+                        (widget.dragging
+                            ? PositionCalculations.columnTopPosition(
+                                    totalHeight: height,
+                                    totalWidth: width,
+                                    cardIndex: card.key,
+                                    isLandscape: isLandscape,
+                                    columnsCount: providerData.columns.length) -
+                                PositionCalculations.cardHeight(
+                                  width,
+                                  providerData.columns.length,
+                                )
+                            : PositionCalculations.columnTopPosition(
                                 totalHeight: height,
                                 totalWidth: width,
                                 cardIndex: card.key,
-                                isLandscape: isLandscape) -
-                            PositionCalculations.verticalOffset(width)
-                        : PositionCalculations.columnTopPosition(
-                            totalHeight: height,
-                            totalWidth: width,
-                            cardIndex: card.key,
-                            isLandscape: isLandscape),
+                                columnsCount: providerData.columns.length,
+                                isLandscape: isLandscape)),
                     card: card.value,
                     cardColumn: widget.cards,
                     columnIndex: widget.columnIndex,
