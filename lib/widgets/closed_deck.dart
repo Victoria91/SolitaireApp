@@ -35,7 +35,6 @@ class ClosedDeck extends StatelessWidget {
                   Positioned(
                     left: ((deckLength - 1) * offsetBetweenCards).toDouble(),
                     child: InkWell(
-                      focusColor: Colors.amber,
                       onTap: gameType == 'spider'
                           ? gameProvider.pushMoveFromDeckEventSpider
                           : gameProvider.pushChangeEvent,

@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:solitaire_app/widgets/dialogs/confirm_new_game_dialog.dart';
-import 'package:solitaire_app/widgets/empty_foundation.dart';
 import 'package:solitaire_app/widgets/foundation_klondike.dart';
 import 'package:solitaire_app/widgets/foundation_spider.dart';
 
