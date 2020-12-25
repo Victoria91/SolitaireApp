@@ -2,21 +2,30 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:solitaire_app/widgets/dialogs/confirm_new_game_dialog.dart';
-import 'package:solitaire_app/widgets/foundation_klondike.dart';
-import 'package:solitaire_app/widgets/foundation_spider.dart';
+import 'package:solitaire_app/ui/widgets/closed_deck.dart';
+import 'package:solitaire_app/ui/widgets/confetti.dart';
+import 'package:solitaire_app/ui/widgets/dialogs/show_alert_dialog.dart';
+import 'package:solitaire_app/ui/widgets/foundation/foundation_klondike.dart';
+import 'package:solitaire_app/ui/widgets/foundation/foundation_spider.dart';
+import 'package:solitaire_app/ui/widgets/opened_deck.dart';
+import 'package:solitaire_app/ui/widgets/dialogs/confirm_new_game_dialog.dart';
 
-import 'package:solitaire_app/widgets/suit_foundation.dart';
+import 'ui/widgets/card_column.dart';
+import 'ui/widgets/closed_deck.dart';
+import 'ui/widgets/opened_deck.dart';
+import 'ui/widgets/confetti.dart';
+import 'ui/widgets/floating_action_button_container.dart';
 
-import 'widgets/card_column.dart';
-import 'widgets/closed_deck.dart';
-import 'widgets/opened_deck.dart';
-import 'widgets/confetti.dart';
-import 'widgets/floating_action_button_container.dart';
-
-import 'providers/game.dart';
-import 'models/card_model.dart';
+import 'package:solitaire_app/domain/state/providers/game.dart';
 import 'constants.dart';
+
+// data - слой работы с данными. На этом уровне, например, описываем работу с внешним API.
+
+// domain - слой бизнес-логики.
+
+// internal - слой приложения. На этом уровне происходит внедрение зависимостей.
+
+// presentation - слой представления. На этом уровне описываем UI приложения.
 
 void main() {
   runApp(
@@ -72,7 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
               icon: Icons.add_outlined,
               position: 'left',
               onPressedCallback: () {
-                showMyDialog(context, ConfirmNewGameDialog());
+                showAlertDialog(context, ConfirmNewGameDialog());
               }),
           FloatingActionButtorContainer(
             icon: Icons.arrow_back,
@@ -111,10 +120,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Stack(
                           overflow: Overflow.visible,
                           children: [
-                            Selector<Game, String>(
-                                selector: (ctx, game) => game.type,
-                                builder: (context, gameType, child) =>
-                                    ClosedDeck(gameType: gameType)),
+                            ClosedDeck(),
                             Selector<Game, String>(
                                 selector: (ctx, game) => game.type,
                                 builder: (context, gameType, child) =>
@@ -131,13 +137,14 @@ class _MyHomePageState extends State<MyHomePage> {
                             buildCardColumn(7, context),
                             buildCardColumn(8, context),
                             buildCardColumn(9, context),
-                            Selector<Game, String>(
+                            Selector<Game, List>(
                                 builder: (context, gameType, child) {
-                                  return gameType == 'spider'
+                                  return gameType[0] == 'spider'
                                       ? FoundationSpider()
                                       : FoundationKlondike();
                                 },
-                                selector: (ctx, game) => game.type),
+                                selector: (ctx, game) =>
+                                    [game.type, game.initial]),
                             Selector<Game, bool>(
                               selector: (ctx, game) => game.win,
                               builder: (context, win, child) => win
@@ -151,38 +158,6 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
       ),
     );
-  }
-
-  Widget buildFoundation(String suit, int position, BuildContext context) {
-    final mediaQuery = MediaQuery.of(context);
-    final gameData = Provider.of<Game>(context, listen: false);
-    return (position < 7 || gameData.type == 'spider')
-        ? Selector<Game, Map>(
-            selector: (_ctx, game) => game.foundation[suit],
-            builder: (_ctx, foundation, _child) {
-              print('rebuilding $suit......');
-
-              return foundation == null
-                  ? Container()
-                  : SuitFoundation(
-                      columnsCount: gameData.columns.length,
-                      height: mediaQuery.size.height,
-                      isLandscape:
-                          mediaQuery.orientation == Orientation.landscape,
-                      foundation: foundation,
-                      width: mediaQuery.size.width,
-                      suit: CardModel.fetchSuit(suit),
-                      position: position,
-                      gameInitial:
-                          Provider.of<Game>(context, listen: false).initial);
-            },
-            shouldRebuild: (previous, next) {
-              if (previous == null) {
-                return true;
-              }
-              return previous['rank'] != next['rank'];
-            })
-        : Container();
   }
 
   Selector<Game, List> buildCardColumn(int index, BuildContext context) {
@@ -205,13 +180,4 @@ class _MyHomePageState extends State<MyHomePage> {
       },
     );
   }
-}
-
-Future<void> showMyDialog(BuildContext context, Widget dialogWidget) async {
-  return showDialog<void>(
-    context: context,
-    builder: (BuildContext _context) {
-      return dialogWidget;
-    },
-  );
 }
