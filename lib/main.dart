@@ -19,14 +19,6 @@ import 'ui/widgets/floating_action_button_container.dart';
 import 'package:solitaire_app/domain/state/providers/game.dart';
 import 'constants.dart';
 
-// data - слой работы с данными. На этом уровне, например, описываем работу с внешним API.
-
-// domain - слой бизнес-логики.
-
-// internal - слой приложения. На этом уровне происходит внедрение зависимостей.
-
-// presentation - слой представления. На этом уровне описываем UI приложения.
-
 void main() {
   runApp(
     ChangeNotifierProvider(
