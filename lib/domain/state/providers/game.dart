@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import 'package:phoenix_wings/phoenix_wings.dart';
 import 'package:http/http.dart' as http;
+
 import 'package:solitaire_app/data/api/models/api_columns.dart';
 import 'package:solitaire_app/data/api/models/api_deck.dart';
 import 'package:solitaire_app/data/api/models/api_foundation.dart';
@@ -13,17 +15,16 @@ import 'package:solitaire_app/domain/models/sorted_foundation_model.dart';
 import 'package:solitaire_app/domain/models/suit_foundation_model.dart';
 
 import 'package:solitaire_app/services/token_storage.dart';
-import '../../../domain/models/card_model.dart';
-import '../../../constants.dart';
+import 'package:solitaire_app/constants.dart';
+import 'package:solitaire_app/domain/models/card_model.dart';
 
 class Game with ChangeNotifier {
-  final socket = PhoenixSocket("ws$hostUrlPath/socket/websocket");
+  final socket = PhoenixSocket('ws$hostUrlPath/socket/websocket');
 
   PhoenixChannel _channel;
 
   List<List<CardModel>> _columns = [];
   List<CardModel> _deck = [];
-  // if game has just started (needed for animation condition)
   bool _initial = false;
 
   int _deckLength = 0;
@@ -46,14 +47,6 @@ class Game with ChangeNotifier {
   SuitFoundationModel _foundationSpade;
   SuitFoundationModel _foundationClub;
 
-  // Map<String, dynamic> _foundation = {
-  //   'club': {},
-  //   'diamond': {},
-  //   'spade': {},
-  //   'heart': {},
-  //   'sorted': []
-  // };
-
   SuitFoundationModel get foundationHeart => _foundationHeart;
   SuitFoundationModel get foundationDiamond => _foundationDiamond;
   SuitFoundationModel get foundationSpade => _foundationSpade;
@@ -61,8 +54,6 @@ class Game with ChangeNotifier {
   SortedFoundationModel get foundationSorted => _foundationSorted;
 
   List<List<CardModel>> get columns => _columns;
-
-  // Map<String, dynamic> get foundation => _foundation;
 
   List<CardModel> get deck => _deck;
 
@@ -81,8 +72,6 @@ class Game with ChangeNotifier {
   Future<void> fetchAndLoadGame() async {
     await socket.connect();
 
-    // GameState(RepositoryModule.dayRepository()).initislize();
-
     _deviceToken = await TokenStorage.getDeviceToken();
     print('tokenn======= $_deviceToken');
 
@@ -97,8 +86,6 @@ class Game with ChangeNotifier {
     // Make the request to the server to join the channel
     _channel.join().receive('ok', (responseFromServer) {
       // print(responseFromServer);
-      print(
-          'responseFromServer========1111${responseFromServer['columns'][1]}');
 
       print('RECEIVED OK ON JOIN');
 
@@ -115,7 +102,7 @@ class Game with ChangeNotifier {
     notifyListeners();
   }
 
-  void _setSuitCount(responseFromServer) {
+  void _setSuitCount(Map responseFromServer) {
     _suitCount = responseFromServer['suit_count'];
     notifyListeners();
   }
@@ -246,7 +233,7 @@ class Game with ChangeNotifier {
     });
   }
 
-  void pushMoveToFoundationFromColumnEvent(columnIndex) {
+  void pushMoveToFoundationFromColumnEvent(int columnIndex) {
     _channel.push(event: 'move_to_foundation_from_column', payload: {
       'from_column': columnIndex
     }).receive('ok', (responseFromServer) {
@@ -297,20 +284,8 @@ class Game with ChangeNotifier {
   }
 
   void _setCardStateDeck(Map response) {
-    print('received _setCardStateDeck-----------');
-
     final apiDeck = ApiDeck.fromApi(response);
     _deck = DeckMapper.fromApi(apiDeck);
-    // print('beforeeee $_deck');
-
-    // _deck = response['deck']
-    //     .map((card) => CardModel.initFromDeck(card[0], card[1].toString()))
-    //     .toList()
-    //     .reversed
-    //     .toList()
-    //     .cast<CardModel>();
-
-    // print('after $_deck');
 
     _deckLength = response['deck_length'];
 
@@ -321,81 +296,12 @@ class Game with ChangeNotifier {
     final apiColumns = ApiColumns.fromApi(response);
     _columns = ColumnsMapper.fromApi(apiColumns, Columns(_columns)).items;
 
-    // print('_columns2=======${_column2[0][0]}');
-
-    // _columns = response['columns']
-    //     .asMap()
-    //     .entries
-    //     .map((res) => res.value['cards']
-    //         .asMap()
-    //         .entries
-    //         .toList()
-    //         .reversed
-    //         .toList()
-    //         .map((card) => CardModel.initFormServer(
-    //             card.value[0],
-    //             card.value[1].toString(),
-    //             res.value['cards'].length - card.key,
-    //             res.value['unplayed'],
-    //             res.value['cards'].length,
-    //             res.value['moveable'],
-    //             card.key == 0 &&
-    //                 _columns.isNotEmpty &&
-    //                 _cardHadTurnedOver(res.value['cards'], _columns[res.key])))
-    //         .toList()
-    //         .cast<CardModel>())
-    //     .toList()
-    //     .cast<List<CardModel>>();
-
-    // _columns.removeAt(2);
-    // _columns.removeAt(3);
-    // _columns.removeAt(4);
-    // _columns.removeAt(5);
-    // _columns.removeAt(6);
-    // _columns.removeAt(7);
-
-    // if (_columns.length > 2) {
-    //   _columns = _columns.sublist(2);
-    // }
-
     notifyListeners();
   }
 
   void _setCardStateFoundation(Map response, [bool manual = false]) {
     print('foundation response=======${response['foundation']}');
 
-    // ['club', 'diamond', 'heart', 'spade'].forEach((suit) {
-    //   final responseBySuit = response['foundation'][suit];
-    //   int fromCardIndex;
-    //   final fromResponseBySuit = responseBySuit['from'];
-    //   if (fromResponseBySuit != null && fromResponseBySuit[0] == 'column') {
-    //     fromCardIndex =
-    //         response['columns'][fromResponseBySuit[1]]['cards'].length + 1;
-    //   }
-
-    //   // if (foundation[suit].isNotEmpty && responseBySuit['rank'] != null) {
-    //   // print("SET TO TRUE==========");
-    //   // setInitial(true);
-    //   // }
-
-    //   _foundation[suit] = (responseBySuit['rank'] == null)
-    //       ? {}
-    //       : {
-    //           // 'count': responseBySuit['count'],
-    //           'prev': responseBySuit['prev'] == null
-    //               ? null
-    //               : CardModel.initFromDeck(suit, responseBySuit['prev']),
-    //           'from': fromResponseBySuit,
-    //           'cardIndex': fromCardIndex,
-    //           'deckLength': response['deck'].length,
-    //           'manual': manual,
-    //           'changed':
-    //               foundation[suit].isNotEmpty && responseBySuit['rank'] != null,
-    //           'rank': CardModel.initFromDeck(suit, responseBySuit['rank'])
-    //         };
-    // });
-
-    // final apiFnd = ApiFoundation.fromApi(response);
     final apiFnd = ApiFoundation.fromApi(response);
     final foundationRes = FoundationMapper.fromApi(
         apiFoundation: apiFnd,
@@ -413,7 +319,6 @@ class Game with ChangeNotifier {
     _foundationSpade = foundationRes.spade;
     _foundationSorted = foundationRes.sorted;
 
-    // _foundation['sorted'] = response['foundation']['sorted'];
     notifyListeners();
   }
 
@@ -427,12 +332,6 @@ class Game with ChangeNotifier {
   }
 
   void unsetChanged(String suitString) {
-    // ['club', 'diamond', 'heart', 'spade'].forEach((element) {
-    //   foundation[element].addAll({'changed': false});
-    // });
-
-// suitFoundation(suitString) = SuitFoundationModel();
-
     switch (suitString) {
       case 'heart':
         {
@@ -493,7 +392,7 @@ class Game with ChangeNotifier {
     notifyListeners();
   }
 
-  _updateGameScreen(payload, _ref, _joinRef) {
+  void _updateGameScreen(Map payload, dynamic _ref, dynamic _joinRef) {
     print('received _updateGameScreen+++');
 
     _setCardStateDeck(payload);
@@ -502,7 +401,7 @@ class Game with ChangeNotifier {
   }
 
   Future<bool> canMove(List<String> to, List<String> from) async {
-    var client = http.Client();
+    final client = http.Client();
     try {
       final response = await client.get(
           'http$hostUrlPath/can_move?to_suit=${to[0]}&to_rank=${to[1]}&from_suit=${from[0]}&from_rank=${from[1]}');

@@ -12,7 +12,7 @@ void main() {
       ]
     });
 
-    expect(res.cards, [
+    expect(res.cards, const [
       ApiDeckItem(rank: 'A', suit: 'club'),
       ApiDeckItem(rank: 8, suit: 'heart'),
       ApiDeckItem(rank: 5, suit: 'spade'),

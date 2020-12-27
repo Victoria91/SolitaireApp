@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:solitaire_app/domain/state/providers/game.dart';
 
+import 'package:solitaire_app/domain/state/providers/game.dart';
 import 'package:solitaire_app/services/position_calculation.dart';
 
 class CardContainer extends StatelessWidget {
@@ -13,6 +13,7 @@ class CardContainer extends StatelessWidget {
       this.transparent = false,
       this.needShadow = true})
       : super(key: key);
+
   final Widget child;
   final bool played;
   final bool needShadow;
@@ -45,7 +46,7 @@ class CardContainer extends StatelessWidget {
                 ]
               : null,
           color: played
-              ? Color.fromRGBO(255, 233, 236, 1)
+              ? const Color.fromRGBO(255, 233, 236, 1)
               : transparent
                   ? Colors.transparent
                   : Colors.blue,

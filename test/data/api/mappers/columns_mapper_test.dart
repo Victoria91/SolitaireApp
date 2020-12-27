@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('mapper test', () {
-    final apiColumns = ApiColumns([
+    const apiColumns = ApiColumns([
       [
         ApiColumnItem(
           rank: 'K',
@@ -38,7 +38,7 @@ void main() {
       ]
     ]);
 
-    final oldColumns = [
+    const oldColumns = [
       [
         CardModel(
             played: false,
@@ -72,7 +72,7 @@ void main() {
 
     final res = ColumnsMapper.fromApi(apiColumns, Columns(oldColumns));
 
-    expect(res.items, [
+    expect(res.items, const [
       [
         CardModel(
             played: false,

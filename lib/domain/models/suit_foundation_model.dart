@@ -2,6 +2,15 @@ import 'package:equatable/equatable.dart';
 import 'package:solitaire_app/domain/models/card_model.dart';
 
 class SuitFoundationModel extends Equatable {
+  const SuitFoundationModel(
+      {this.fromCardIndex,
+      this.current,
+      this.from,
+      this.deckLength,
+      this.prev,
+      this.manual,
+      this.changed});
+
   final CardModel prev;
   final CardModel current;
   final List from;
@@ -10,6 +19,7 @@ class SuitFoundationModel extends Equatable {
   final bool manual;
   final bool changed;
 
+  @override
   List<Object> get props =>
       [prev, current, from, fromCardIndex, deckLength, manual];
 
@@ -17,13 +27,4 @@ class SuitFoundationModel extends Equatable {
   String toString() {
     return 'manual : $manual \n deckLength : $deckLength \n changed: $changed \n prev: $prev \n current: $current \n from: $from \n fromCardIndex: $fromCardIndex \n';
   }
-
-  SuitFoundationModel(
-      {this.fromCardIndex,
-      this.current,
-      this.from,
-      this.deckLength,
-      this.prev,
-      this.manual,
-      this.changed});
 }

@@ -7,6 +7,8 @@ import 'package:solitaire_app/domain/state/providers/game.dart';
 import 'card/card_widget.dart';
 
 class ClosedDeck extends StatelessWidget {
+  const ClosedDeck();
+
   @override
   Widget build(BuildContext context) {
     final gameProvider = Provider.of<Game>(context, listen: false);
@@ -27,7 +29,7 @@ class ClosedDeck extends StatelessWidget {
                                 left: (e * offsetBetweenCards).toDouble(),
                                 child: CardWidget(
                                   needShadow: gameType == 'spider',
-                                  card: CardModel(played: false),
+                                  card: const CardModel(played: false),
                                 ))),
                       Positioned(
                         left:
@@ -36,7 +38,7 @@ class ClosedDeck extends StatelessWidget {
                           onTap: gameType == 'spider'
                               ? gameProvider.pushMoveFromDeckEventSpider
                               : gameProvider.pushChangeEvent,
-                          child: CardWidget(
+                          child: const CardWidget(
                             card: CardModel(played: false),
                           ),
                         ),

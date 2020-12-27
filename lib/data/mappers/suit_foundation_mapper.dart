@@ -14,7 +14,7 @@ class SuitFoundationMapper {
     final newCurrent = apiSuitFoundation != null
         ? CardMapper.fromApiFoundation(apiSuitFoundation.rank, suitString)
         : null;
-    Function eq = const ListEquality().equals;
+    final eq = const ListEquality().equals;
 
     if (oldSuitFoundationModel != null &&
         newCurrent == oldSuitFoundationModel.current &&

@@ -24,7 +24,7 @@ void main() {
       ]
     });
 
-    expect(res.columns, [
+    expect(res.columns, const [
       [
         ApiColumnItem(
           rank: 'K',

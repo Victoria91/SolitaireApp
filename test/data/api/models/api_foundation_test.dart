@@ -32,8 +32,8 @@ void main() {
     expect(res.sorted, ['spade', 'heart']);
     expect(res.club, null);
     expect(res.diamond,
-        ApiSuitFoundation(rank: 2, prev: 'A', from: ['column', 3]));
+        const ApiSuitFoundation(rank: 2, prev: 'A', from: ['column', 3]));
     expect(res.heart, null);
-    expect(res.spade, ApiSuitFoundation(from: ['column', 3], rank: 'A'));
+    expect(res.spade, const ApiSuitFoundation(from: ['column', 3], rank: 'A'));
   });
 }

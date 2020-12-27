@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:solitaire_app/domain/models/card_model.dart';
 
-import 'title_part.dart';
-import 'center_part.dart';
-import 'card_container.dart';
+import 'package:solitaire_app/ui/widgets/card/card_container.dart';
+import 'package:solitaire_app/ui/widgets/card/center_part.dart';
+import 'package:solitaire_app/ui/widgets/card/title_part.dart';
 
 class CardWidget extends StatelessWidget {
   const CardWidget({@required this.card, this.needShadow = true});

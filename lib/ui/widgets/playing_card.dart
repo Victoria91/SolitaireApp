@@ -1,29 +1,17 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:solitaire_app/domain/models/card_model.dart';
 import 'package:solitaire_app/domain/state/providers/game.dart';
 import 'package:solitaire_app/services/position_calculation.dart';
 
-import 'dart:async';
-import 'dart:math';
-
-import 'card_column.dart';
-import 'card/card_widget.dart';
+import 'package:solitaire_app/ui/widgets/card/card_widget.dart';
+import 'package:solitaire_app/ui/widgets/card_column.dart';
 
 class PlayingCard extends StatefulWidget {
-  final double top;
-  final double width;
-  final bool last;
-  final bool dragging;
-  final CardModel card;
-  final List<CardModel> cardColumn;
-  final int cardIndex;
-  final int columnIndex;
-  final int columnCount;
-  final bool gameInitial;
-  final bool newCardSet;
-
-  PlayingCard({
+  const PlayingCard({
     @required this.top,
     @required this.gameInitial,
     @required this.card,
@@ -36,6 +24,18 @@ class PlayingCard extends StatefulWidget {
     @required this.cardIndex,
     @required this.columnIndex,
   });
+
+  final double top;
+  final double width;
+  final bool last;
+  final bool dragging;
+  final CardModel card;
+  final List<CardModel> cardColumn;
+  final int cardIndex;
+  final int columnIndex;
+  final int columnCount;
+  final bool gameInitial;
+  final bool newCardSet;
 
   @override
   _PlayingCardState createState() => _PlayingCardState(
@@ -52,6 +52,41 @@ class PlayingCard extends StatefulWidget {
 
 class _PlayingCardState extends State<PlayingCard>
     with TickerProviderStateMixin {
+  _PlayingCardState(
+      {this.dragging,
+      this.updatedTop,
+      this.gameInitial,
+      this.last,
+      this.width,
+      this.columnCount,
+      this.newCardSet,
+      this.played,
+      this.columnIndex}) {
+    if (gameInitial) {
+      _timer = Timer(const Duration(microseconds: 500), () {
+        setState(() {
+          top = widget.top;
+        });
+      });
+    } else if (last && newCardSet) {
+      left = -PositionCalculations.columnLeftPosition(
+        width,
+        columnCount,
+        columnIndex,
+      );
+      _timer = Timer(const Duration(microseconds: 500), () {
+        setState(() {
+          top = widget.top;
+
+          left = 0;
+          Provider.of<Game>(context, listen: false).unsetNewCardSet();
+        });
+      });
+    } else {
+      top = updatedTop;
+    }
+  }
+
   Timer _timer;
   var top = 0.0;
   var left = 0.0;
@@ -72,8 +107,8 @@ class _PlayingCardState extends State<PlayingCard>
   @override
   void initState() {
     super.initState();
-    _animationController =
-        AnimationController(vsync: this, duration: Duration(milliseconds: 180));
+    _animationController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 180));
     _animation = Tween(begin: pi / 2, end: 0.0).animate(_animationController)
       ..addListener(() {
         setState(() {});
@@ -85,41 +120,6 @@ class _PlayingCardState extends State<PlayingCard>
           }
         });
       });
-  }
-
-  _PlayingCardState(
-      {this.dragging,
-      this.updatedTop,
-      this.gameInitial,
-      this.last,
-      this.width,
-      this.columnCount,
-      this.newCardSet,
-      this.played,
-      this.columnIndex}) {
-    if (gameInitial) {
-      _timer = Timer(Duration(microseconds: 500), () {
-        setState(() {
-          top = widget.top;
-        });
-      });
-    } else if (last && newCardSet) {
-      left = -PositionCalculations.columnLeftPosition(
-        width,
-        columnCount,
-        columnIndex,
-      );
-      _timer = Timer(Duration(microseconds: 500), () {
-        setState(() {
-          top = widget.top;
-
-          left = 0;
-          Provider.of<Game>(context, listen: false).unsetNewCardSet();
-        });
-      });
-    } else {
-      top = updatedTop;
-    }
   }
 
   @override
@@ -188,7 +188,7 @@ class _PlayingCardState extends State<PlayingCard>
                     ..rotateY(_animation.value),
                   child: animationFinished
                       ? draggableCard
-                      : CardWidget(
+                      : const CardWidget(
                           card: CardModel(played: false),
                         ),
                 )

@@ -3,32 +3,28 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:solitaire_app/ui/widgets/closed_deck.dart';
+import 'package:solitaire_app/ui/widgets/columns_widget.dart';
 import 'package:solitaire_app/ui/widgets/confetti.dart';
 import 'package:solitaire_app/ui/widgets/dialogs/show_alert_dialog.dart';
-import 'package:solitaire_app/ui/widgets/foundation/foundation_klondike.dart';
-import 'package:solitaire_app/ui/widgets/foundation/foundation_spider.dart';
+import 'package:solitaire_app/ui/widgets/foundation/foundation_widget.dart';
 import 'package:solitaire_app/ui/widgets/opened_deck.dart';
 import 'package:solitaire_app/ui/widgets/dialogs/confirm_new_game_dialog.dart';
-
-import 'ui/widgets/card_column.dart';
-import 'ui/widgets/closed_deck.dart';
-import 'ui/widgets/opened_deck.dart';
-import 'ui/widgets/confetti.dart';
-import 'ui/widgets/floating_action_button_container.dart';
-
 import 'package:solitaire_app/domain/state/providers/game.dart';
-import 'constants.dart';
+import 'package:solitaire_app/constants.dart';
+import 'package:solitaire_app/ui/widgets/floating_action_button_container.dart';
 
 void main() {
   runApp(
     ChangeNotifierProvider(
       create: (context) => Game(),
-      child: MyApp(),
+      child: const MyApp(),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp();
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -58,9 +54,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    Color gradientStart =
+    final gradientStart =
         Colors.deepPurple[700]; //Change start gradient color here
-    Color gradientEnd = Colors.purple[500]; //Change end gradient color here
+    final gradientEnd = Colors.purple[500]; //Change end gradient color here
 
     final mediaQuery = MediaQuery.of(context);
     final isLandscape = mediaQuery.orientation == Orientation.landscape;
@@ -73,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
               icon: Icons.add_outlined,
               position: 'left',
               onPressedCallback: () {
-                showAlertDialog(context, ConfirmNewGameDialog());
+                showAlertDialog(context, const ConfirmNewGameDialog());
               }),
           FloatingActionButtorContainer(
             icon: Icons.arrow_back,
@@ -89,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
         future: future,
         builder: (context, snapshot) => snapshot.connectionState ==
                 ConnectionState.waiting
-            ? Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
                 child: Container(
                   decoration: BoxDecoration(
@@ -97,7 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           colors: [gradientStart, gradientEnd],
                           begin: const FractionalOffset(0.5, 0.0),
                           end: const FractionalOffset(0.0, 0.5),
-                          stops: [0.0, 1.0],
+                          stops: const [0.0, 1.0],
                           tileMode: TileMode.clamp)),
                   child: Padding(
                       padding: isLandscape
@@ -112,64 +108,17 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Stack(
                           overflow: Overflow.visible,
                           children: [
-                            ClosedDeck(),
-                            Selector<Game, String>(
-                                selector: (ctx, game) => game.type,
-                                builder: (context, gameType, child) =>
-                                    gameType == 'klondike'
-                                        ? OpenedDeck()
-                                        : Container()),
-                            buildCardColumn(0, context),
-                            buildCardColumn(1, context),
-                            buildCardColumn(2, context),
-                            buildCardColumn(3, context),
-                            buildCardColumn(4, context),
-                            buildCardColumn(5, context),
-                            buildCardColumn(6, context),
-                            buildCardColumn(7, context),
-                            buildCardColumn(8, context),
-                            buildCardColumn(9, context),
-                            Selector<Game, List>(
-                                builder: (context, gameType, child) {
-                                  return gameType[0] == 'spider'
-                                      ? FoundationSpider()
-                                      : FoundationKlondike();
-                                },
-                                selector: (ctx, game) =>
-                                    [game.type, game.initial]),
-                            Selector<Game, bool>(
-                              selector: (ctx, game) => game.win,
-                              builder: (context, win, child) => win
-                                  ? Confetti(height: mediaQuery.size.height)
-                                  : Container(),
-                            ),
+                            const ClosedDeck(),
+                            const OpenedDeck(),
+                            const ColumnsWidget(),
+                            const FoundationWidget(),
+                            Confetti()
                           ],
                         ),
                       )),
                 ),
               ),
       ),
-    );
-  }
-
-  Selector<Game, List> buildCardColumn(int index, BuildContext context) {
-    final gameData = Provider.of<Game>(context, listen: false);
-    return Selector<Game, List>(
-      selector: (_ctx, game) =>
-          game.columns.isNotEmpty && game.columns.length > index
-              ? game.columns[index]
-              : null,
-      builder: (_ctx, columnsData, _child) {
-        return columnsData == null
-            ? Container()
-            : CardColumn(
-                gameInitial: gameData.initial,
-                gameType: gameData.type,
-                columnCount: gameData.columns.length,
-                cards: columnsData,
-                columnIndex: index,
-                width: MediaQuery.of(context).size.width);
-      },
     );
   }
 }

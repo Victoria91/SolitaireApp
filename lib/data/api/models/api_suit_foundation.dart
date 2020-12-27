@@ -1,22 +1,23 @@
 import 'package:equatable/equatable.dart';
 
 class ApiSuitFoundation extends Equatable {
-  final List from;
-  final dynamic prev;
-  final dynamic rank;
-
-  ApiSuitFoundation({
+  const ApiSuitFoundation({
     this.from,
     this.rank,
     this.prev,
   });
 
-  List<Object> get props => [from, rank, prev];
-
   ApiSuitFoundation.fromApi(Map response)
       : from = response['from'],
         prev = response['prev'],
         rank = response['rank'];
+
+  final List from;
+  final dynamic prev;
+  final dynamic rank;
+
+  @override
+  List<Object> get props => [from, rank, prev];
 
   @override
   String toString() {

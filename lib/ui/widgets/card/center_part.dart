@@ -1,7 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:solitaire_app/domain/models/card_model.dart';
-
-import 'dart:math';
 
 class CenterPart extends StatelessWidget {
   const CenterPart({
@@ -27,13 +27,12 @@ class CenterPart extends StatelessWidget {
           color: color,
         ),
       ]);
-      // } else if (['J', 'D', 'K'].contains(card.rank) &&
     } else if ([CardRank.jack, CardRank.queen, CardRank.king]
             .contains(card.rank) &&
         constraints.maxHeight > 100) {
       return Column(children: [
         Image.asset(
-            'assets/images/${card.rankString()}-${card.fetcSuitString()}.png',
+            'assets/images/${card.rankString()}-${card.fetchSuitString()}.png',
             width: constraints.maxWidth,
             height: constraints.maxHeight / 1.9)
       ]);

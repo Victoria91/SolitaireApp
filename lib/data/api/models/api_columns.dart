@@ -1,14 +1,7 @@
 import 'package:solitaire_app/data/api/models/api_column_item.dart';
 
 class ApiColumns {
-  final List<List<ApiColumnItem>> columns;
-
-  @override
-  String toString() {
-    return '$columns \n';
-  }
-
-  ApiColumns(this.columns);
+  const ApiColumns(this.columns);
 
   ApiColumns.fromApi(Map<String, dynamic> map)
       : columns = map['columns']
@@ -24,4 +17,10 @@ class ApiColumns {
                 .cast<ApiColumnItem>())
             .toList()
             .cast<List<ApiColumnItem>>();
+  final List<List<ApiColumnItem>> columns;
+
+  @override
+  String toString() {
+    return '$columns \n';
+  }
 }

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:solitaire_app/domain/state/providers/game.dart';
 import 'package:solitaire_app/ui/widgets/dialogs/choose_game_dialog.dart';
+import 'package:solitaire_app/ui/widgets/dialogs/dialog_wrapper.dart';
 import 'package:solitaire_app/ui/widgets/dialogs/show_alert_dialog.dart';
 
 class ConfirmNewGameDialog extends StatelessWidget {
@@ -11,10 +12,8 @@ class ConfirmNewGameDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoAlertDialog(
-        // shape: RoundedRectangleBorder(
-        //     borderRadius: const BorderRadius.all(Radius.circular(20.0))),
-        title: const Center(child: const Text('Start new game')),
+    return DialogWrapper(
+        titleText: 'Start a new game',
         content: const Text(
           'Are you sure you want to start a new game?',
           textAlign: TextAlign.center,
@@ -28,15 +27,15 @@ class ConfirmNewGameDialog extends StatelessWidget {
             },
           ),
           TextButton(
-            child: Text('Another game'),
+            child: const Text('Another game'),
             onPressed: () {
               Navigator.of(context).pop();
 
-              showAlertDialog(context, ChooseNewGameDialog());
+              showAlertDialog(context, const ChooseNewGameDialog());
             },
           ),
           TextButton(
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
             onPressed: () {
               Navigator.of(context).pop();
             },

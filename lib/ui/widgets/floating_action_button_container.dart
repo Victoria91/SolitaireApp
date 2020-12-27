@@ -19,8 +19,8 @@ class FloatingActionButtorContainer extends StatelessWidget {
 
     return Container(
       padding: position == 'left'
-          ? EdgeInsets.only(left: 15)
-          : EdgeInsets.only(right: 15),
+          ? const EdgeInsets.only(left: 15)
+          : const EdgeInsets.only(right: 15),
       child: Align(
         alignment: isLandscape
             ? (position == 'left')

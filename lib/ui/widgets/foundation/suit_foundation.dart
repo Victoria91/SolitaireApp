@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,19 +11,7 @@ import 'package:solitaire_app/services/position_calculation.dart';
 import '../card/card_widget.dart';
 import 'empty_foundation.dart';
 
-import 'dart:async';
-
 class SuitFoundation extends StatefulWidget {
-  final double width;
-  final double height;
-  final CardSuit suit;
-  final int position;
-  final SuitFoundationModel foundation;
-  final bool isLandscape;
-  final bool changed;
-  final bool gameInitial;
-  final int columnsCount;
-
   SuitFoundation({
     Key key,
     @required this.width,
@@ -34,7 +24,16 @@ class SuitFoundation extends StatefulWidget {
     this.suit,
     this.changed,
   }) : super(key: key ?? ObjectKey([foundation, position]));
-  // }) : super(key: key ?? ObjectKey(foundation));
+
+  final double width;
+  final double height;
+  final CardSuit suit;
+  final int position;
+  final SuitFoundationModel foundation;
+  final bool isLandscape;
+  final bool changed;
+  final bool gameInitial;
+  final int columnsCount;
 
   @override
   _NewSuitFoundationState createState() => _NewSuitFoundationState(
@@ -48,7 +47,7 @@ class SuitFoundation extends StatefulWidget {
       from: foundation.from,
       suit: suit,
       deckLength: foundation.deckLength,
-      changed: changed != null ? changed : foundation.changed,
+      changed: changed ?? foundation.changed,
       manual: foundation.manual,
       gameInitial: gameInitial,
       prevCard: foundation.prev);
@@ -56,34 +55,6 @@ class SuitFoundation extends StatefulWidget {
 
 class _NewSuitFoundationState extends State<SuitFoundation>
     with TickerProviderStateMixin {
-  Timer _timer;
-  var left;
-  var top = 0.0;
-  final CardModel currentCard;
-  final CardModel prevCard;
-  final double width;
-  final double height;
-  final int position;
-  final List from;
-  final CardSuit suit;
-  final int deckLength;
-  final int cardIndex;
-  final int columnsCount;
-  final bool isLandscape;
-  final bool manual;
-  final bool gameInitial;
-  final bool changed;
-  double newLeftValue;
-
-  AnimationController rotationController;
-
-  @override
-  void initState() {
-    rotationController = AnimationController(
-        duration: const Duration(milliseconds: 500), vsync: this);
-    super.initState();
-  }
-
   _NewSuitFoundationState(
       {@required this.currentCard,
       @required this.changed,
@@ -124,12 +95,12 @@ class _NewSuitFoundationState extends State<SuitFoundation>
             cardIndex: cardIndex);
       }
       if (changed) {
-        _timer = Timer(Duration(microseconds: 500), () {
+        _timer = Timer(const Duration(microseconds: 500), () {
           setState(() {
             left = newLeftValue;
             top = 0;
             Provider.of<Game>(context, listen: false)
-                .unsetChanged(currentCard.fetcSuitString());
+                .unsetChanged(currentCard.fetchSuitString());
           });
         });
       } else {
@@ -137,6 +108,33 @@ class _NewSuitFoundationState extends State<SuitFoundation>
         top = 0;
       }
     }
+  }
+  Timer _timer;
+  double left;
+  var top = 0.0;
+  final CardModel currentCard;
+  final CardModel prevCard;
+  final double width;
+  final double height;
+  final int position;
+  final List from;
+  final CardSuit suit;
+  final int deckLength;
+  final int cardIndex;
+  final int columnsCount;
+  final bool isLandscape;
+  final bool manual;
+  final bool gameInitial;
+  final bool changed;
+  double newLeftValue;
+
+  AnimationController rotationController;
+
+  @override
+  void initState() {
+    rotationController = AnimationController(
+        duration: const Duration(milliseconds: 500), vsync: this);
+    super.initState();
   }
 
   @override
@@ -155,7 +153,6 @@ class _NewSuitFoundationState extends State<SuitFoundation>
   // changed and current card is non null
   bool _needRotate() {
     return !(currentCard == null || manual || !changed);
-    // return !(currentCard == null || manual);
   }
 
   @override
@@ -171,7 +168,7 @@ class _NewSuitFoundationState extends State<SuitFoundation>
     );
 
     final emptyFoundationWidget = providerData.type == 'spider'
-        ? EmptyFoundation()
+        ? const EmptyFoundation()
         : EmptyFoundation(card: CardModel(played: false, suit: widget.suit));
 
     final dragTarget = DragTarget<Map>(
@@ -187,11 +184,11 @@ class _NewSuitFoundationState extends State<SuitFoundation>
             ? emptyFoundationWidget
             : providerData.type == 'spider'
                 ? currentCardWidget
-                : Draggable<Map>(
+                : Draggable<Map<String, dynamic>>(
                     childWhenDragging: Container(),
                     data: {
                       'move_from_foundation': true,
-                      'suit': currentCard.fetcSuitString()
+                      'suit': currentCard.fetchSuitString()
                     },
                     feedback: currentCardWidget,
                     child: currentCardWidget,

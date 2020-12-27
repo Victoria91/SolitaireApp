@@ -9,7 +9,7 @@ import 'package:solitaire_app/domain/models/suit_foundation_model.dart';
 
 void main() {
   test('foundation mapper', () {
-    final apiFoundation = ApiFoundation(
+    const apiFoundation = ApiFoundation(
       deckLength: 3,
       sorted: ['spade', 'club'],
       diamond: ApiSuitFoundation(rank: 2, prev: 'A', from: ['column', 0]),
@@ -18,7 +18,7 @@ void main() {
       heart: ApiSuitFoundation(rank: 2, prev: 'A', from: ['column', 1]),
     );
 
-    final oldFoundationModel = FoundationModel(club: SuitFoundationModel());
+    const oldFoundationModel = FoundationModel(club: SuitFoundationModel());
 
     final res = FoundationMapper.fromApi(
         manual: true,
@@ -46,20 +46,20 @@ void main() {
 
     expect(
         res.sorted,
-        SortedFoundationModel(
+        const SortedFoundationModel(
           suits: ['spade', 'club'],
           changed: true,
           unplayedCount: 6,
         ));
     expect(res.spade,
-        SuitFoundationModel(manual: true, changed: true, deckLength: 3));
+        const SuitFoundationModel(manual: true, changed: true, deckLength: 3));
     expect(
         res.club,
         SuitFoundationModel(
             fromCardIndex: null,
             deckLength: 3,
             from: apiFoundation.club.from,
-            current: CardModel(
+            current: const CardModel(
                 played: true,
                 moveable: true,
                 rank: CardRank.ace,
@@ -70,7 +70,7 @@ void main() {
 
     expect(
         res.heart,
-        SuitFoundationModel(
+        const SuitFoundationModel(
           deckLength: 3,
           current: CardModel(
               rank: CardRank.two,
@@ -90,7 +90,7 @@ void main() {
 
     expect(
         res.diamond,
-        SuitFoundationModel(
+        const SuitFoundationModel(
           from: ['column', 0],
           deckLength: 3,
           fromCardIndex: 2,

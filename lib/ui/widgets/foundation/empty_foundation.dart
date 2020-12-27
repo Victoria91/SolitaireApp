@@ -6,8 +6,9 @@ import 'package:solitaire_app/services/position_calculation.dart';
 import 'package:solitaire_app/ui/widgets/card/card_container.dart';
 
 class EmptyFoundation extends StatelessWidget {
-  final CardModel card;
   const EmptyFoundation({Key key, this.card}) : super(key: key);
+
+  final CardModel card;
 
   @override
   Widget build(BuildContext context) {

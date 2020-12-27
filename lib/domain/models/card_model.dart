@@ -29,28 +29,20 @@ enum CardRank {
 }
 
 class CardModel extends Equatable {
+  const CardModel(
+      {@required this.played, this.moveable, this.rank, this.suit, this.isNew});
+
   final CardSuit suit;
   final CardRank rank;
   final bool played;
   final bool moveable;
   final bool isNew;
 
-  CardModel(
-      {@required this.played, this.moveable, this.rank, this.suit, this.isNew});
-
+  @override
   List<Object> get props => [suit, rank, played, moveable, isNew];
 
-  // CardModel.initFromDeck(
-  //   String suitString,
-  //   dynamic rankString,
-  // )   : rank = fetchRank(rankString),
-  //       suit = fetchSuit(suitString),
-  //       isNew = false,
-  //       moveable = true,
-  //       played = true;
-
   List<String> toServer() {
-    return [this.fetcSuitString(), this.rankString()];
+    return [fetchSuitString(), rankString()];
   }
 
   @override
@@ -67,26 +59,8 @@ class CardModel extends Equatable {
     }[suitString];
   }
 
-  static CardRank fetchRank(dynamic rankString) {
-    return {
-      2: CardRank.two,
-      3: CardRank.three,
-      4: CardRank.four,
-      5: CardRank.five,
-      6: CardRank.six,
-      7: CardRank.seven,
-      8: CardRank.eight,
-      9: CardRank.nine,
-      10: CardRank.ten,
-      'J': CardRank.jack,
-      'Q': CardRank.queen,
-      'K': CardRank.king,
-      'A': CardRank.ace,
-    }[rankString];
-  }
-
   bool isRed() {
-    return (suit == CardSuit.heart || suit == CardSuit.diamond);
+    return suit == CardSuit.heart || suit == CardSuit.diamond;
   }
 
   IconData icon() {
@@ -98,7 +72,7 @@ class CardModel extends Equatable {
     }[suit];
   }
 
-  String fetcSuitString() {
+  String fetchSuitString() {
     return {
       CardSuit.spade: 'spade',
       CardSuit.club: 'club',

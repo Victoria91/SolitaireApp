@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:solitaire_app/domain/state/providers/game.dart';
+import 'package:solitaire_app/ui/widgets/dialogs/dialog_wrapper.dart';
 
 class ChooseNewGameDialog extends StatelessWidget {
   const ChooseNewGameDialog({
@@ -10,14 +12,12 @@ class ChooseNewGameDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoAlertDialog(
-      // shape: RoundedRectangleBorder(
-      //     borderRadius: BorderRadius.all(Radius.circular(20.0))),
-      title: const Center(child: const Text('Start new game')),
+    return DialogWrapper(
+      titleText: 'Start a new game',
       content: Container(
         height: 250,
         width: 100,
-        child: ListView(children: [
+        child: ListView(children: const [
           SelectGameButton(
             color: Colors.purple,
             type: 'klondike',
@@ -55,10 +55,6 @@ class ChooseNewGameDialog extends StatelessWidget {
 }
 
 class SelectGameButton extends StatelessWidget {
-  final MaterialColor color;
-  final String text;
-  final String type;
-  final int suitCount;
   const SelectGameButton(
       {Key key,
       @required this.color,
@@ -66,6 +62,11 @@ class SelectGameButton extends StatelessWidget {
       @required this.type,
       @required this.suitCount})
       : super(key: key);
+
+  final MaterialColor color;
+  final String text;
+  final String type;
+  final int suitCount;
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +81,7 @@ class SelectGameButton extends StatelessWidget {
         child: Text(
           text,
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18.0),

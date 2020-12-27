@@ -1,7 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import 'dart:async';
 
 import 'package:solitaire_app/domain/models/card_model.dart';
 import 'package:solitaire_app/domain/state/providers/game.dart';
@@ -10,14 +10,6 @@ import 'package:solitaire_app/services/position_calculation.dart';
 import '../widgets/playing_card.dart';
 
 class CardColumn extends StatefulWidget {
-  final List<CardModel> cards;
-  final int columnIndex;
-  final int columnCount;
-  final bool dragging;
-  final double width;
-  final bool gameInitial;
-  final String gameType;
-
   CardColumn(
       {Key key,
       @required this.cards,
@@ -28,6 +20,14 @@ class CardColumn extends StatefulWidget {
       @required this.gameType,
       this.dragging = false})
       : super(key: key ?? ObjectKey([cards]));
+
+  final List<CardModel> cards;
+  final int columnIndex;
+  final int columnCount;
+  final bool dragging;
+  final double width;
+  final bool gameInitial;
+  final String gameType;
 
   @override
   _CardColumnState createState() => _CardColumnState(
@@ -40,15 +40,6 @@ class CardColumn extends StatefulWidget {
 }
 
 class _CardColumnState extends State<CardColumn> {
-  Timer _timer;
-  var left = 0.0;
-  final bool dragging;
-  final double width;
-  final int columnIndex;
-  final bool gameInitial;
-  final String gameType;
-  final int columnCount;
-
   _CardColumnState(
       {@required this.dragging,
       @required this.width,
@@ -62,7 +53,7 @@ class _CardColumnState extends State<CardColumn> {
         width, columnCount, columnIndex);
 
     if (gameInitial) {
-      _timer = Timer(Duration(microseconds: 1000), () {
+      _timer = Timer(const Duration(microseconds: 1000), () {
         setState(() {
           left = leftAfterAnimation;
 
@@ -73,6 +64,15 @@ class _CardColumnState extends State<CardColumn> {
       left = leftAfterAnimation;
     }
   }
+
+  Timer _timer;
+  var left = 0.0;
+  final bool dragging;
+  final double width;
+  final int columnIndex;
+  final bool gameInitial;
+  final String gameType;
+  final int columnCount;
 
   @override
   void dispose() {

@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import '../constants.dart';
+import 'package:solitaire_app/constants.dart';
 
 class PositionCalculations {
   static double columnLeftPosition(
@@ -31,22 +31,22 @@ class PositionCalculations {
         deckCardIndex * _offsetBetweenWidgetCards(totalWidth);
   }
 
-  static cardWidth(double totalWidth, int columnsCount) {
+  static double cardWidth(double totalWidth, int columnsCount) {
     return (totalWidth -
             horizontalTotalPadding * 2 -
             offsetBetweenColumns * (columnsCount - 1)) /
         columnsCount;
   }
 
-  static verticalOffsetBetweenCards(bool isLandscape) {
+  static int verticalOffsetBetweenCards(bool isLandscape) {
     return isLandscape ? 22 : 42;
   }
 
-  static cardHeight(double totalWidth, int columnsCount) {
+  static double cardHeight(double totalWidth, int columnsCount) {
     return totalWidth / 7 * (columnsCount > 7 ? 1 : 1.2);
   }
 
-  static _offsetBetweenWidgetCards(double totalWidth) {
+  static double _offsetBetweenWidgetCards(double totalWidth) {
     return totalWidth / 32;
   }
 }

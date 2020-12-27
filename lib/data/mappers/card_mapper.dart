@@ -50,7 +50,7 @@ CardSuit fetchSuit(String suitString) {
   }[suitString];
 }
 
-CardRank fetchRank(rankString) {
+CardRank fetchRank(dynamic rankString) {
   return {
     2: CardRank.two,
     3: CardRank.three,

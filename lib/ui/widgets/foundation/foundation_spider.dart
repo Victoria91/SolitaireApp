@@ -29,7 +29,7 @@ class FoundationSpider extends StatelessWidget {
             (index) => SuitFoundation(
                   columnsCount: gameData.columns.length,
                   width: mediaQuery.size.width,
-                  foundation: SuitFoundationModel(),
+                  foundation: const SuitFoundationModel(),
                   height: mediaQuery.size.height,
                   position: 8 - index + 1,
                   gameInitial: false,
@@ -46,8 +46,6 @@ Widget buildFoundation(
   final gameData = Provider.of<Game>(context, listen: false);
 
   final suitFoundation = gameData.suitFoundation(suit);
-  print('changed=========${suitFoundation.changed}');
-  print('changed=========${gameData.foundationSorted.changed && last}');
 
   return SuitFoundation(
       columnsCount: gameData.columns.length,

@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('mapper test', () {
-    final apiDeck = ApiDeck([
+    const apiDeck = ApiDeck([
       ApiDeckItem(rank: 2, suit: 'spade'),
       ApiDeckItem(rank: 4, suit: 'diamond'),
       ApiDeckItem(rank: 'K', suit: 'club')
@@ -14,7 +14,7 @@ void main() {
 
     final res = DeckMapper.fromApi(apiDeck);
 
-    expect(res, [
+    expect(res, const [
       CardModel(
           played: true,
           rank: CardRank.two,
