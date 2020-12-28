@@ -34,10 +34,21 @@ dependencies:
   dotted_border: ^1.0.6
   confetti: ^0.5.4+1
   shared_preferences: ^0.5.12+4
+  equatable: ^1.2.5
+  test: ^1.15.7
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.8.1
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "dev_assets/icon.png"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "dev_assets/icon.png"
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -78,6 +89,20 @@ flutter:
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
   #
+
+  assets:
+    - assets/images/J-diamond.png
+    - assets/images/J-spade.png
+    - assets/images/J-heart.png
+    - assets/images/J-club.png
+    - assets/images/Q-club.png
+    - assets/images/Q-diamond.png
+    - assets/images/Q-spade.png
+    - assets/images/Q-heart.png
+    - assets/images/K-spade.png
+    - assets/images/K-diamond.png
+    - assets/images/K-club.png
+    - assets/images/K-heart.png
 
   fonts:
     - family:  Heart

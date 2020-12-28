@@ -1,4 +1,4 @@
-package com.example.solitaire_app
+package com.dbykov.solitaire
 
 import io.flutter.embedding.android.FlutterActivity
 
